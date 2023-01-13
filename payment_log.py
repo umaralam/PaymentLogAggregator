@@ -22,8 +22,8 @@ class Main:
         num_argv = len(sys.argv)
         logging.debug('Number of arguments passed is %s', num_argv - 1)
         
-        if num_argv == 4:
-            logging.debug('Arguments passed are - msisdn:%s and search date:%s', sys.argv[1], sys.argv[2])
+        if num_argv == 5:
+            logging.debug('Arguments passed are - msisdn:%s and search date:%s', sys.argv[1], sys.argv[2], sys.argv[3])
             # if num_argv == 4:
             #     logging.debug('Arguments passed are - msisdn:%s and automattion_log:%s', sys.argv[1], sys.argv[2])
             # else:
@@ -57,20 +57,19 @@ class Main:
             logging.info("*******************************************")
             
             self.remove_backdated_files(outputDirectory_object, back_date)
-            validation_object = InputValidation(sys.argv[1], sys.argv[2])
+            validation_object = InputValidation(sys.argv[1], sys.argv[2], sys.argv[3])
             
             try:
-                if num_argv == 4:
-                    fmsisdn, input_date = self.validate_input(validation_object, num_argv)
+                if num_argv == 5:
+                    validation_object.validate_msisdn()
+                    validation_object.validate_date()
             except Exception as error:
                 logging.exception(error)
-                
-            msisdn = sys.argv[1]
             
             logging.info('\n')
             
             if validation_object.is_input_valid:
-                initializedPath_object = LogPathFinder(hostname, config, input_date)
+                initializedPath_object = LogPathFinder(hostname, config, validation_object)
                 try:
                     for i in config[hostname]:
                         try:
@@ -113,9 +112,10 @@ class Main:
                 except KeyError as ex:
                     logging.error('invalid hostname key')
             
+            uid = sys.argv[4]
             
-            if num_argv == 4:
-                processor_object = PROCESSOR(initializedPath_object, msisdn, fmsisdn, input_date, outputDirectory_object, validation_object, sys.argv[3])
+            if num_argv == 5:
+                processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid)
                 processor_object.process()
             else:
                 logging.error('xyz')
@@ -139,17 +139,7 @@ class Main:
                 else:
                     logging.info('back dated file does not exists: %s', file)
         else:
-            logging.info('back dated file does not exists')
-        
-    def validate_input(self, validation_object, cmd_argv):
-        try:
-            if cmd_argv == 4:
-                fmsisdn = validation_object.validate_msisdn()
-                input_date = validation_object.validate_date()
-                return (fmsisdn, input_date)
-        except Exception as error:
-            raise    
-        
+            logging.info('back dated file does not exists')        
         
 if __name__ == '__main__':
     main_object = Main()

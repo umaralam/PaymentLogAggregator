@@ -6,10 +6,12 @@ class LogPathFinder():
     """
     Path finder class
     """
-    def __init__(self, hostname, config, input_date):
+    def __init__(self, hostname, config, validation_object):
         
         self.config = config
-        self.input_date = input_date
+        self.validation_object = validation_object
+        self.start_date = validation_object.start_date
+        self.end_date = validation_object.end_date
         self.hostname = hostname
         
         #griff tomcat dictionary object
@@ -37,7 +39,7 @@ class LogPathFinder():
         """
         Parse log paths
         """
-        search_date = datetime.strftime(datetime.strptime(self.input_date, "%Y%m%d"), "yyyy-MM-dd")
+        search_date = datetime.strftime(self.start_date, "yyyy-MM-dd")
         pname = process_name
         
         if pname == 'GRIFF':
@@ -81,6 +83,7 @@ class LogPathFinder():
                                 replacedValue = str(value).replace("${sys:catalina.home}",\
                                                 self.griff_tomcat_log_path_dict[self.griff_process_home_directory])\
                                                 .replace("%d{yyyy-MM-dd}-%i", f'{search_date}-*')
+                                logging.info('replaced value: %s', replacedValue)
                                 self.griff_tomcat_log4j_property_dict[key] = replacedValue
                         
                         logging.info('\n')
