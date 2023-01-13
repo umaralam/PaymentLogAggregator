@@ -3,14 +3,14 @@ class TlogParser:
     """
     Parse the tlog for various conditions
     """
-    def __init__(self, initializedPath_object, input_date):
+    def __init__(self, initializedPath_object, validation_object):
         
         self.initializedPath_object = initializedPath_object
-        self.input_date = input_date
+        self.validation_object = validation_object
         
-    def parse_griff_tomcat(self, validation_object):
+    def parse_griff_tomcat(self):
         
-        tlog_object = Tlog(self.initializedPath_object, self.input_date)
+        tlog_object = Tlog(self.initializedPath_object, self.validation_object)
         
-        if tlog_object.get_griff_tomcat_tlog(validation_object):
+        if tlog_object.get_griff_tomcat_tlog():
             pass

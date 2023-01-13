@@ -6,17 +6,17 @@ class Tlog:
     """
     tlog mapping class
     """
-    def __init__(self, initializedPath_object, input_date):
+    def __init__(self, initializedPath_object, validation_object):
         
         self.initializedPath_object = initializedPath_object
-        self.input_date = input_date
+        self.validation_object = validation_object
     
-    def get_griff_tomcat_tlog(self, validation_object):
+    def get_griff_tomcat_tlog(self):
         """
         calling path finder method
         """
         tlog_record = []
-        logfile_object = LogFileFinder(self.initializedPath_object, self.input_date)
+        logfile_object = LogFileFinder(self.initializedPath_object, self.validation_object)
         tlog_files = list(logfile_object.tomcat_griff_tlog_files())
         logging.info('tlog files: %s', tlog_files)
         # if tlog_files != None:
