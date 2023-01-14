@@ -40,7 +40,7 @@ class InputValidation:
             self.start_date = datetime.strptime(self.start_date, "%Y%m%d")
             self.end_date = datetime.strptime(self.end_date, "%Y%m%d")
             self.is_input_valid = True
-            logging.debug('start date: %s and end date: %s entered is valid', self.start_date, self.end_date)
+            logging.debug('start date: %s and end date: %s entered is valid', datetime.strftime(self.start_date, "%Y%m%d"), datetime.strftime(self.end_date, "%Y%m%d"))
         except Exception as error:
             logging.error('start date: %s or/and end date: %s entered is of invalid format. The format should be "yyyymmdd".', self.start_date, self.end_date)
             self.is_input_valid = False
