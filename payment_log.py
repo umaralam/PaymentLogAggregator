@@ -23,7 +23,7 @@ class Main:
         logging.debug('Number of arguments passed is %s', num_argv - 1)
         
         if num_argv == 5:
-            logging.debug('Arguments passed are - msisdn:%s and search date:%s', sys.argv[1], sys.argv[2], sys.argv[3])
+            logging.debug('Arguments passed are - msisdn:%s, start date:%s and end date: %s', sys.argv[1], sys.argv[2], sys.argv[3])
             # if num_argv == 4:
             #     logging.debug('Arguments passed are - msisdn:%s and automattion_log:%s', sys.argv[1], sys.argv[2])
             # else:
@@ -31,7 +31,7 @@ class Main:
                 
         r_period = 1
         hostname = socket.gethostname()
-        data = Path("common.json").read_text()
+        data = Path(f"{hostname}.json").read_text()
         config = json.loads(data)
         
         if config:

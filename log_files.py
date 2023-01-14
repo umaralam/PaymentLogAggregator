@@ -34,20 +34,20 @@ class LogFileFinder:
         
         #method call to date range list
         input_date = self.date_range_list(self.s_date, self.e_date)
-        logging.info('date list: %s', input_date)
         
         for date in input_date:
-            logging.info('date: %s', date)
-            input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
-            logging.info('input date formatted: %s', input_date_formatted)
-            
+            # logging.info('search date is: %s', datetime.strftime(date, "%Y-%m-%d"))
+            input_date_formatted = datetime.strftime(date, "%Y-%m-%d")            
             
             #input dated file in the tlog directory
             dated_tlog_files = [p for p in path.glob(f"griffTLog-{input_date_formatted}-*.csv")]
                 
             if bool(dated_tlog_files):
+                logging.info(f"griffTLog-{input_date_formatted}-*.csv file present" )
                 for files in dated_tlog_files:
                     tlog_files.append(str(files))
+            else:
+                logging.info(f"griffTLog-{input_date_formatted}-*.csv file not present" )
             
         return tlog_files    
     
