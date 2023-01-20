@@ -115,7 +115,7 @@ class Main:
             uid = sys.argv[4]
             
             if num_argv == 5:
-                processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid)
+                processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid, config)
                 processor_object.process()
             else:
                 logging.error('xyz')
