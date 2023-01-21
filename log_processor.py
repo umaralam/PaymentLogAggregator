@@ -12,12 +12,12 @@ class PROCESSOR:
         self.validation_object = validation_object
         self.oarm_uid = oarm_uid
         self.config = config
-        self.payment_tlog_dict = {"GRIFF" : "" , "PACKS" : ""}
-        # self.payment_tlog_dict = defaultdict(list)
+        
+        # self.payment_tlog_dict = {}
         
     
     def process(self):
-        tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object, self.config, self.payment_tlog_dict)
+        tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object, self.config)
         
         hostname = socket.gethostname()
         for pname in self.config[hostname]:
@@ -34,6 +34,6 @@ class PROCESSOR:
         
         # json_object = json.dumps(self.payment_tlog_dict)
         
-        # logging.info('tlogs: %s', self.payment_tlog_dict)
-        logging.info('json tlog data: %s',json.dumps(self.payment_tlog_dict))
+        # logging.info('tlogs: %s', str(self.griff_tlog_dict["PACKS"]).replace("'", '"'))
+        # logging.info('json tlog data: %s',json.dumps(self.payment_tlog_dict))
         

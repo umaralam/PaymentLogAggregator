@@ -11,7 +11,7 @@ class Tlog:
     """
     tlog mapping class
     """
-    def __init__(self, initializedPath_object, validation_object, payment_tlog_dict):
+    def __init__(self, initializedPath_object, validation_object):
         
         self.initializedPath_object = initializedPath_object
         self.validation_object = validation_object
@@ -24,7 +24,8 @@ class Tlog:
         self.tlog_backup_files_with_ctid_msisdn = []
         self.tlog_dict = defaultdict(list)
         self.ctid_data_dict = defaultdict(list)
-        self.payment_tlog_dict = payment_tlog_dict
+        self.griff_tlog_dict = {}
+        self.packs_tlog_dict = {}
     
     def get_tomcat_tlog(self, pname):
         """
@@ -207,16 +208,13 @@ class Tlog:
                         self.ctid_data_dict[ctid].append(data_dict)
                         
         if pname == "GRIFF":
-            temp_tlog_dict_1 = defaultdict(None, {f"{self.validation_object.fmsisdn}" : dict(self.ctid_data_dict)})
-            self.tlog_dict = defaultdict(None, {f"{pname}_TLOG" : dict(temp_tlog_dict_1)})
-            self.payment_tlog_dict[f"{pname}"] = str(dict(self.tlog_dict))
+            self.griff_tlog_dict = {"GRIFF": {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
+            logging.info('griff tlogs: %s', str(self.griff_tlog_dict).replace("'", '"'))
             
         elif pname == "PACKS":
-            temp_tlog_dict_1 = defaultdict(None, {f"{self.validation_object.fmsisdn}" : dict(self.ctid_data_dict)})
-            self.tlog_dict = defaultdict(None, {f"{pname}_TLOG" : dict(temp_tlog_dict_1)})
-            self.payment_tlog_dict[f"{pname}"] = str(dict(self.tlog_dict))
+            self.packs_tlog_dict = {"PACKS": {"PACKS_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
         
-        # logging.info('tlogs: %s', self.payment_tlog_dict["GRIFF"])
+        logging.info('packs tlogs: %s', str(self.packs_tlog_dict).replace("'", '"'))
         # logging.info('json tlog data: %s',json.dumps(self.payment_tlog_dict))
             
         
