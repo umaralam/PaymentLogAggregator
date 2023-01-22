@@ -24,6 +24,10 @@ class Tlog:
         self.tlog_backup_files_with_ctid_msisdn = []
         self.tlog_dict = defaultdict(list)
         self.ctid_data_dict = defaultdict(list)
+        
+        self.griff_ctid_msisdn_data_list = []
+        self.packs_ctid_msisdn_data_list = []
+        
         self.griff_tlog_dict = {}
         self.packs_tlog_dict = {}
     
@@ -73,10 +77,12 @@ class Tlog:
             # logging.info('data list: %s', data_list)
                 
             self.tlog_record_header_mapping(pname, data_list)
-            self.counter = 0
                 
-        # if self.griff_tlog_dict:
-        #     logging.info('tlog header data: %s', self.griff_tlog_dict)
+        if self.griff_ctid_msisdn_data_list and self.griff_tlog_dict:
+            return self.griff_ctid_msisdn_data_list, self.griff_tlog_dict
+        
+        elif self.packs_ctid_msisdn_data_list and self.packs_tlog_dict:
+            return self.packs_ctid_msisdn_data_list, self.packs_tlog_dict
     
     def msisdn_ctid_map(self, pname, file, is_backup_file):
         
@@ -106,8 +112,18 @@ class Tlog:
                     logging.info('dated backup file: %s', file)
                     self.tlog_backup_files_with_ctid_msisdn.append(file)
                 
-        
-        ctid_msisdn_data = ctid_mdn_data.split('\n')
+        if pname == "GRIFF":
+            ctid_msisdn_data = ctid_mdn_data.split('\n')
+            for row in ctid_msisdn_data:
+                if row != "":
+                    self.griff_ctid_msisdn_data_list.append(row)
+            
+        elif pname == "PACKS":
+            ctid_msisdn_data = ctid_mdn_data.split('\n')
+            for row in ctid_msisdn_data:
+                if row != "":
+                    self.packs_ctid_msisdn_data_list.append(row)
+            
         # logging.info('ctid-msisdn string data: %s', ctid_msisdn_data)
         for row in ctid_msisdn_data:
             if row != "":
@@ -209,12 +225,12 @@ class Tlog:
                         
         if pname == "GRIFF":
             self.griff_tlog_dict = {"GRIFF": {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
-            logging.info('griff tlogs: %s', str(self.griff_tlog_dict).replace("'", '"'))
+            # logging.info('griff tlogs: %s', str(self.griff_tlog_dict).replace("'", '"'))
             
         elif pname == "PACKS":
             self.packs_tlog_dict = {"PACKS": {"PACKS_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
-        
-        logging.info('packs tlogs: %s', str(self.packs_tlog_dict).replace("'", '"'))
+            
+        # logging.info('packs tlogs: %s', str(self.packs_tlog_dict).replace("'", '"'))
         # logging.info('json tlog data: %s',json.dumps(self.payment_tlog_dict))
             
         
