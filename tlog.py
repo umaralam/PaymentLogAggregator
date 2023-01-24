@@ -78,13 +78,15 @@ class Tlog:
                 self.ctid_based_tlog_fetch(pname, self.tlog_backup_files_with_ctid_msisdn, True)
         
         if self.tlog_record:
+            logging.info('tlog record: %s', self.tlog_record)
             data_list = []
             for data in self.tlog_record:
+                logging.info('data in tlog: %s', data)
                 for record in str(data).splitlines():
                     data_list.append(record)
+                    
+            self.tlog_record_header_mapping(pname, self.is_backup_file, data_list)
             # logging.info('data list: %s', data_list)
-                
-            self.tlog_record_header_mapping(pname, data_list)
         
         if self.griff_ctid_msisdn_data_list and self.griff_tlog_dict:
             # outfile_writer.write_json_tlog_data(self.griff_tlog_dict)
@@ -118,7 +120,7 @@ class Tlog:
                     self.tlog_backup_files_with_ctid_msisdn.append(file)
             
             elif pname == "GRIFF_EXTHIT":
-                ctid_data = subprocess.check_output(f"zcat {file} | cut -d ',' -f 2 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                ctid_data = subprocess.check_output(f"zcat {file} | cut -d ',' -f 3 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                 if ctid_data:
                     self.tlog_backup_files_with_ctid_msisdn.append(file)
                 
@@ -139,7 +141,7 @@ class Tlog:
                     self.tlog_files_with_ctid_msisdn.append(file)
             
             elif pname == "GRIFF_EXTHIT":
-                ctid_data = subprocess.check_output(f"cat {file} | cut -d ',' -f 2 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                ctid_data = subprocess.check_output(f"cat {file} | cut -d ',' -f 3 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                 if ctid_data:
                     self.tlog_files_with_ctid_msisdn.append(file)
             
@@ -190,7 +192,7 @@ class Tlog:
                         # create a new array of msisdn
                         self.ctid_msisdn_map_dict[msisdn] = [ctid]
                         
-            # logging.info('map: %s', self.ctid_msisdn_map_dict)
+            logging.info('map: %s', self.ctid_msisdn_map_dict)
             
         elif pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
             skip_string = ['#product=griff','#source=external_hits', 'THREAD_NAME', '#version=1.0.0', 'APPID', 'CTID']
@@ -225,36 +227,42 @@ class Tlog:
                             logging.info(ex)
                 else:
                     for file in files:
-                        with open(file, "r") as tlog_file:
-                            reader = csv.reader(tlog_file)
+                        try:
+                            data = subprocess.check_output(f"cat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                            self.tlog_record.append(data)
+                        except Exception as ex:
+                            logging.info(ex)
+                        # logging.info('file: %s', file)
+                        # with open(file, "r") as tlog_file:
+                        #     reader = csv.reader(tlog_file)
 
-                            for row in reader:
-                                try:
-                                    if pname == "GRIFF":
-                                        if row[1] == ctid:       
-                                            # logging.info('row data in reader: %s', row)
-                                            self.tlog_record.append(row)
+                        #     for row in reader:
+                        #         try:
+                        #             if pname == "GRIFF":
+                        #                 if row[1] == ctid:       
+                        #                     logging.info('row data in reader: %s', row)
+                        #                     self.tlog_record.append(row)
                                             
-                                    elif pname == "PACKS":
-                                        if row[51] == ctid:
-                                            # logging.info('row data in reader: %s', row)
-                                            self.tlog_record.append(row)
+                        #             elif pname == "PACKS":
+                        #                 if row[51] == ctid:
+                        #                     # logging.info('row data in reader: %s', row)
+                        #                     self.tlog_record.append(row)
                                     
-                                    elif pname == "GRIFF_EXTHIT":
-                                        if row[2] == ctid:
-                                            logging.info('row data in reader: %s', row[2])
-                                            self.tlog_record.append(row)
+                        #             elif pname == "GRIFF_EXTHIT":
+                        #                 if row[2] == ctid:
+                        #                     logging.info('row data in reader: %s', row[2])
+                        #                     self.tlog_record.append(row)
                                     
-                                    elif pname == "PACKS_EXTHIT":
-                                        if row[3] == ctid:
-                                            logging.info('row data in reader: %s', row[3])
-                                            self.tlog_record.append(row)
-                                except Exception as ex:
-                                    logging.info("Ignoring header data")
+                        #             elif pname == "PACKS_EXTHIT":
+                        #                 if row[3] == ctid:
+                        #                     logging.info('row data in reader: %s', row[3])
+                        #                     self.tlog_record.append(row)
+                        #         except Exception as ex:
+                        #             logging.info("Ignoring header data")
         except Exception as ex:
             logging.info(ex)
             
-    def tlog_record_header_mapping(self, pname, data_list):
+    def tlog_record_header_mapping(self, pname, is_backup, data_list):
         
         #GRIFF tlog header mapping
         if pname == "GRIFF":
@@ -285,7 +293,7 @@ class Tlog:
         
         elif pname == "GRIFF_EXTHIT":
             header = [
-                        "TIMESTAMP","CTID","STORENAME","EXTNAME","APINAME","HTTPMETHOD","HTTPSTATUSCODE","TIMETAKEN",\
+                        "TIMESTAMP","THREAD_NAME","CTID","STORENAME","EXTNAME","APINAME","HTTPMETHOD","HTTPSTATUSCODE","TIMETAKEN",\
                         "PROXYHOST","PROXYPORT","URL","REQHEADERS","RQEPARAMS","REQBODY","RESPONSE"
                     ]
         
@@ -302,14 +310,23 @@ class Tlog:
             
         for ctid in temp_map:
             for data in data_list:
+                logging.info('data: %s', data)
                 splited_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
+                
                 if pname == "GRIFF":
-                    if ctid == splited_data[1].replace('"', ''):
+                    if ctid == splited_data[1].replace('"', '').strip():
                         data_dict = {}
                         for index, element in enumerate(splited_data):
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[ctid].append(data_dict)
-                
+                    # else:
+                    #     # for item in splited_data:
+                    #     logging.info('splited data: %s', splited_data)
+                    #     for index, element in enumerate(splited_data):
+                    #         data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip()
+                    #     self.ctid_data_dict[ctid].append(data_dict)
+                        
+            
                 elif pname == "PACKS":
                     if ctid == splited_data[50].replace('"', ''):
                         data_dict = {}
@@ -318,9 +335,11 @@ class Tlog:
                         self.ctid_data_dict[ctid].append(data_dict)
                 
                 elif pname == "GRIFF_EXTHIT":
-                    if ctid == splited_data[1]:
+                    if ctid == splited_data[2]:
+                        # logging.info('splited data: %s', splited_data)
                         data_dict = {}
                         for index, element in enumerate(splited_data):
+                            logging.info('element: %s', element)
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[ctid].append(data_dict)
                 
