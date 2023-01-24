@@ -16,7 +16,7 @@ class TlogParser:
     def parse_tomcat_tlog(self, pname):
         
         #tlog object
-        tlog_object = Tlog(self.initializedPath_object, self.validation_object, self.payment_data_dict_list, self.payment_data_dict)
+        tlog_object = Tlog(self.initializedPath_object, self.validation_object, self.payment_data_dict_list, self.payment_data_dict, self.config)
         
         tlog_object.get_tomcat_tlog(pname)
         

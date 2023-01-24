@@ -11,20 +11,23 @@ class Tlog:
     """
     tlog mapping class
     """
-    def __init__(self, initializedPath_object, validation_object, payment_data_dict_list, payment_data_dict):
+    def __init__(self, initializedPath_object, validation_object, payment_data_dict_list, payment_data_dict, config):
         
         self.initializedPath_object = initializedPath_object
         self.validation_object = validation_object
         self.tlog_files = []
         self.backup_tlog_files = []
+        self.access_files = []
         self.ctid_msisdn_map_dict = {}
         self.ctid_map_dict = {}
         self.tlog_record = []
+        self.access_record = []
         self.is_backup_file = False
         self.tlog_files_with_ctid_msisdn = []
         self.tlog_backup_files_with_ctid_msisdn = []
         self.tlog_dict = defaultdict(list)
         self.ctid_data_dict = defaultdict(list)
+        self.ctid_access_data_dict = defaultdict(list)
         
         self.griff_ctid_msisdn_data_list = []
         self.packs_ctid_msisdn_data_list = []
@@ -34,20 +37,23 @@ class Tlog:
         self.packs_ctid_data_list = []
         
         self.griff_tlog_dict = {}
+        self.griff_access_log_dict = {}
         self.packs_tlog_dict = {}
+        self.packs_access_log_dict = {}
         
         self.griff_ext_hit_tlog_dict = {}
         self.packs_ext_hit_tlog_dict = {}
         
         self.payment_data_dict_list = payment_data_dict_list
-        self.payment_data_dict = payment_data_dict    
+        self.payment_data_dict = payment_data_dict
+        self.config = config
     
     def get_tomcat_tlog(self, pname):
         """
         calling path finder method
         """
         
-        logfile_object = LogFileFinder(self.initializedPath_object, self.validation_object)
+        logfile_object = LogFileFinder(self.initializedPath_object, self.validation_object, self.config)
 
         self.constructor_parameter_reinitialize()
         
@@ -69,6 +75,19 @@ class Tlog:
                 #function call
                 self.msisdn_ctid_map(pname, file, self.is_backup_file)
         
+        if pname == "GRIFF":
+            if self.initializedPath_object.griff_tomcat_log_path_dict["griff_tomcat_access_path"]:
+                logging.debug('griff tomcat access path exists.')
+                self.access_files = logfile_object.get_tomcat_access_files(pname)
+        
+        elif pname == "PACKS":
+            if self.initializedPath_object.packs_tomcat_log_path_dict["packs_tomcat_access_path"]:
+                logging.debug('packs tomcat access path exists.')
+                self.access_files = logfile_object.get_tomcat_access_files(pname)
+        
+        if self.access_files:
+            self.ctid_based_accesslog_fetch(pname, self.access_files)
+            
         if (self.ctid_msisdn_map_dict or self.ctid_map_dict)\
             and (self.tlog_files_with_ctid_msisdn or self.tlog_backup_files_with_ctid_msisdn):
             
@@ -352,39 +371,94 @@ class Tlog:
                         self.ctid_data_dict[ctid].append(data_dict)
                         
         if pname == "GRIFF":
-            self.griff_tlog_dict = {"GRIFF": {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
+            self.griff_tlog_dict = {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.griff_tlog_dict)
             logging.info('griff tlogs: %s', str(self.griff_tlog_dict).replace("'", '"'))
         
         elif pname == "GRIFF_EXTHIT":
-            self.griff_ext_hit_tlog_dict = {"GRIFF": {"GRIFF_EXT_HIT_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
+            self.griff_ext_hit_tlog_dict = {"GRIFF_EXT_HIT_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.griff_ext_hit_tlog_dict)
             logging.info('griff ext tlogs: %s', str(self.griff_ext_hit_tlog_dict))
             
         elif pname == "PACKS":
-            self.packs_tlog_dict = {"PACKS": {"PACKS_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
+            self.packs_tlog_dict = {"PACKS_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.packs_tlog_dict)
             logging.info('packs tlogs: %s', str(self.packs_tlog_dict).replace("'", '"'))
         
         elif pname == "PACKS_EXTHIT":
-            self.packs_ext_hit_tlog_dict = {"PACKS": {"PACKS_EXT_HIT_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}}
+            self.packs_ext_hit_tlog_dict = {"PACKS_EXT_HIT_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.packs_ext_hit_tlog_dict)
             logging.info('packs ext tlogs: %s', str(self.packs_ext_hit_tlog_dict).replace("'", '"'))
             
         
         # logging.info('json tlog data: %s',json.dumps(self.payment_tlog_dict))
             
+    
+    def ctid_based_accesslog_fetch(self, pname, files):
+        if pname == "GRIFF":
+            for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
+                logging.info('ctid is: %s', ctid)
+                for file in files:
+                    try:
+                        data = subprocess.check_output(f"cat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                        self.access_record.append(data)
+                        
+                        if self.access_record:
+                            logging.info('griff access record: %s', self.access_record)
+                            data_list = []
+                            for data in self.access_record:
+                                logging.info('data in tlog: %s', data)
+                                for record in str(data).splitlines():
+                                    if record:
+                                        data_list.append(record)
+                                # calling access data map function
+                    except Exception as ex:
+                        logging.info(ex)
+            self.ctid_access_data_dict[f"{ctid}"].append(data_list)
+                        
+        elif pname == "PACKS":
+            for file in files:
+                try:
+                    data = subprocess.check_output(f"cat {file} | grep -a {self.validation_object.fmsisdn}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                    self.access_record.append(data)
+                    
+                    if self.access_record:
+                        logging.info('packs access record: %s', self.access_record)
+                        self.ctid_access_data_dict[f"{self.validation_object.fmsisdn}"].append(self.access_record)
+                except Exception as ex:
+                    logging.info(ex)
         
+        if self.ctid_access_data_dict:
+            self.access_data_mapping(pname)
+    
+    def access_data_mapping(self, pname):
+        
+        logging.info('ctid based access data dict: %s', self.ctid_access_data_dict)
+        
+        if pname == "GRIFF":
+            # self.griff_access_log_dict = {"GRIFF_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
+            self.griff_access_log_dict = {"GRIFF_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
+            self.payment_data_dict_list.append(self.griff_access_log_dict)
+            logging.info('griff access logs: %s', self.griff_access_log_dict)
+    
+        elif pname == "PACKS":
+            self.packs_access_log_dict = {"PACKS_ACCESS_LOG": dict(self.ctid_access_data_dict)}
+            self.payment_data_dict_list.append(self.packs_access_log_dict)
+            logging.info('packs access logs: %s', self.packs_access_log_dict)
+            
     def constructor_parameter_reinitialize(self):
         self.tlog_files = []
         self.backup_tlog_files = []
+        self.access_files = []
         self.ctid_msisdn_map_dict = {}
         self.tlog_record = []
+        self.access_record = []
         self.is_backup_file = False
         self.tlog_files_with_ctid_msisdn = []
         self.tlog_backup_files_with_ctid_msisdn = []
         # self.tlog_dict = defaultdict()
         self.ctid_data_dict = defaultdict(list)
+        self.ctid_access_data_dict = defaultdict(list)
         
 
         
