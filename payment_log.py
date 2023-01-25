@@ -35,7 +35,7 @@ class Main:
         config = json.loads(data)
         
         if config:
-            logging.info('data rentention is by default defined for 1 day.')
+            logging.info('data rentention is by default 1 day.')
             bdt = datetime.today() - timedelta(days=r_period)
             back_date = datetime.strftime(bdt, "%Y%m%d")
             logging.info('back date: %s', back_date)
@@ -115,7 +115,7 @@ class Main:
             uid = sys.argv[4]
             
             if num_argv == 5:
-                processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid)
+                processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid, config)
                 processor_object.process()
             else:
                 logging.error('xyz')
