@@ -20,7 +20,7 @@ class Main:
         logging.debug('start of execution time: %s', start)
         
         num_argv = len(sys.argv)
-        logging.debug('Number of arguments passed is %s', num_argv - 1)
+        logging.debug('Number of arguments passed is: %s', num_argv - 1)
         
         if num_argv == 5:
             logging.debug('Arguments passed are - msisdn:%s, start date:%s and end date: %s', sys.argv[1], sys.argv[2], sys.argv[3])
