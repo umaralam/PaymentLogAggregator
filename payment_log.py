@@ -35,7 +35,7 @@ class Main:
         config = json.loads(data)
         
         if config:
-            logging.info('data rentention is by default 1 day.')
+            logging.info('data rentention period is by default 1 day.')
             bdt = datetime.today() - timedelta(days=r_period)
             back_date = datetime.strftime(bdt, "%Y%m%d")
             logging.info('back date: %s', back_date)
