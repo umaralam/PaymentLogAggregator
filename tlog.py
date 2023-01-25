@@ -344,7 +344,6 @@ class Tlog:
                     #     for index, element in enumerate(splited_data):
                     #         data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip()
                     #     self.ctid_data_dict[ctid].append(data_dict)
-                        
             
                 elif pname == "PACKS":
                     if ctid == splited_data[50].replace('"', ''):
@@ -360,7 +359,8 @@ class Tlog:
                         for index, element in enumerate(splited_data):
                             logging.info('element: %s', element)
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
-                        self.ctid_data_dict[ctid].append(data_dict)
+                        self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
+                    logging.info('ctid data dict ext: %s', self.ctid_data_dict)
                 
                 elif pname == "PACKS_EXTHIT":
                     if ctid == splited_data[2]:
@@ -368,7 +368,7 @@ class Tlog:
                         logging.info('splitted data is: %s', splited_data)
                         for index, element in enumerate(splited_data):
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
-                        self.ctid_data_dict[ctid].append(data_dict)
+                        self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
                         
         if pname == "GRIFF":
             self.griff_tlog_dict = {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
@@ -397,6 +397,7 @@ class Tlog:
     def ctid_based_accesslog_fetch(self, pname, files):
         if pname == "GRIFF":
             for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
+                self.constructor_access_paramter_reinitialize()
                 logging.info('ctid is: %s', ctid)
                 for file in files:
                     try:
@@ -410,11 +411,12 @@ class Tlog:
                                 logging.info('data in tlog: %s', data)
                                 for record in str(data).splitlines():
                                     if record:
+                                        logging.info('access rec: %s', record)
                                         data_list.append(record)
                                 # calling access data map function
+                        self.ctid_access_data_dict[f"{ctid}"].append(data_list)
                     except Exception as ex:
                         logging.info(ex)
-            self.ctid_access_data_dict[f"{ctid}"].append(data_list)
                         
         elif pname == "PACKS":
             for file in files:
@@ -423,7 +425,7 @@ class Tlog:
                     self.access_record.append(data)
                     
                     if self.access_record:
-                        logging.info('packs access record: %s', self.access_record)
+                        # logging.info('packs access record: %s', self.access_record)
                         self.ctid_access_data_dict[f"{self.validation_object.fmsisdn}"].append(self.access_record)
                 except Exception as ex:
                     logging.info(ex)
@@ -459,6 +461,9 @@ class Tlog:
         # self.tlog_dict = defaultdict()
         self.ctid_data_dict = defaultdict(list)
         self.ctid_access_data_dict = defaultdict(list)
+        
+    def constructor_access_paramter_reinitialize(self):
+        self.access_record = []
         
 
         
