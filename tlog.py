@@ -319,7 +319,7 @@ class Tlog:
         elif pname == "PACKS_EXTHIT":
             header = [
                         "TIMESTAMP","THREAD_NAME","CTID","APPID","PACKID","APINAME","EXTNAME","HTTPMETHOD","HTTPSTATUSCODE",\
-                        "TIMETAKEN","PROXYHOST","PROXYPORT","URL","REQHEADERS","RQEPARAMS","REQBODY","RESPONSE","COOKIE"
+                        "TIMETAKEN","PROXYHOST","PROXYPORT","URL","REQHEADERS","RQEPARAMS","REQBODY","RESPONSE","RESPONSEHEADERS"
                     ]
         
         if pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
