@@ -102,7 +102,8 @@ class Tlog:
             for data in self.tlog_record:
                 logging.info('data in tlog: %s', data)
                 for record in str(data).splitlines():
-                    data_list.append(record)
+                    if record not in data_list:
+                        data_list.append(record)
                     
             self.tlog_record_header_mapping(pname, self.is_backup_file, data_list)
             # logging.info('data list: %s', data_list)
@@ -134,7 +135,7 @@ class Tlog:
                     self.tlog_backup_files_with_ctid_msisdn.append(file)
                     
             elif pname == "PACKS":
-                ctid_mdn_data = subprocess.check_output(f"zcat {file} | grep -a {self.validation_object.fmsisdn} | cut -d ',' -f 51,4 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                ctid_mdn_data = subprocess.check_output(f"zcat {file} | grep -a {self.validation_object.fmsisdn} | cut -d ',' -f 5,4 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                 if ctid_mdn_data:
                     self.tlog_backup_files_with_ctid_msisdn.append(file)
             
@@ -155,7 +156,7 @@ class Tlog:
                     self.tlog_files_with_ctid_msisdn.append(file)
                     
             elif pname == "PACKS":
-                ctid_mdn_data = subprocess.check_output(f"grep -a {self.validation_object.fmsisdn} {file} | cut -d ',' -f 51,4 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                ctid_mdn_data = subprocess.check_output(f"grep -a {self.validation_object.fmsisdn} {file} | cut -d ',' -f 5,4 | sort -u", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                 if ctid_mdn_data:
                     self.tlog_files_with_ctid_msisdn.append(file)
             
@@ -177,6 +178,7 @@ class Tlog:
             
         elif pname == "PACKS":
             ctid_msisdn_data = ctid_mdn_data.split('\n')
+            logging.info('packs ctid msisdn data: %s', ctid_msisdn_data)
             for row in ctid_msisdn_data:
                 if row != "":
                     self.packs_ctid_msisdn_data_list.append(row)
@@ -201,7 +203,7 @@ class Tlog:
                     if pname == "GRIFF":
                         ctid, msisdn = tuple(row.replace('"', '').split(","))
                     elif pname == "PACKS":
-                        msisdn, ctid = tuple(row.replace('"', '').split(","))
+                        ctid, msisdn = tuple(row.replace('"', '').split(","))
                     try:
                         if ctid not in self.ctid_msisdn_map_dict[msisdn]:
                             # append the new ctid to the existing array of msisdn
@@ -235,7 +237,7 @@ class Tlog:
                 temp_map = self.ctid_map_dict[self.validation_object.fmsisdn]
             else:
                 temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
-                
+            
             for ctid in temp_map:
                 if is_backup_files:
                     for file in files:
@@ -299,7 +301,7 @@ class Tlog:
             
         elif pname == "PACKS":
             header = [
-                        "PackTLogCreatedTimeStamp","THREAD_NAME","API_NAME","REQ_MSISDN","REQ_APPID","REQ_PACKID",\
+                        "PackTLogCreatedTimeStamp","THREAD_NAME","API_NAME","CTID","REQ_MSISDN","REQ_APPID","REQ_PACKID",\
                         "REQ_OPERATOR","REQ_CIRCLE","SEL_OPERATOR","SEL_CIRCLE","REQ_ACTION","REQ_USERINFO","RES_USERINFO",\
                         "REQ_AMOUNT","REQ_SERVICEKEY","REQ_EVENTKEY","REQ_ALL_PARAMS","BILLING_SERVICE_KEY","BILLING_URL_TEMPLATE",\
                         "BILLING_URL_CALLED","BILLING_REQ_TIME_START","BILLING_REQ_TIME_END","BILLING_AMOUNT","BILLING_RES_STATUS",\
@@ -307,7 +309,7 @@ class Tlog:
                         "BILLING_TYPE","CALLBACK_REGISTERED","RET_APPS","RET_PACKS","RET_STATUS","RET_ERROR_REASON","SEL_APPIDs",\
                         "SEL_PACKIDs","SUBSCRIBER_ID","SUBS_STATUS_BEFORE","SUBS_STATUS_AFTER","REQ_ACTION_MODE","REQ_NEW_MSISDN",\
                         "PACK_LEVEL_FILTER","APP_LEVEL_FILTER","COMMON_PARAM_FILTER","CHARGE_KEY","SOURCE_IP","GRIFF_RESPONSE",\
-                        "CTID","THIRD_PARTIES","TOTAL_TIMETAKEN","PACKS_TIMETAKEN","EXT_TIMETAKEN","TRAP_STATUS"
+                        "THIRD_PARTIES","TOTAL_TIMETAKEN","PACKS_TIMETAKEN","EXT_TIMETAKEN","TRAP_STATUS"
                     ]
         
         elif pname == "GRIFF_EXTHIT":
@@ -327,9 +329,9 @@ class Tlog:
         else:
             temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
             
+        logging.info('data list: %s', data_list)
         for ctid in temp_map:
             for data in data_list:
-                logging.info('data: %s', data)
                 splited_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
                 
                 if pname == "GRIFF":
@@ -338,19 +340,15 @@ class Tlog:
                         for index, element in enumerate(splited_data):
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[ctid].append(data_dict)
-                    # else:
-                    #     # for item in splited_data:
-                    #     logging.info('splited data: %s', splited_data)
-                    #     for index, element in enumerate(splited_data):
-                    #         data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip()
-                    #     self.ctid_data_dict[ctid].append(data_dict)
             
                 elif pname == "PACKS":
-                    if ctid == splited_data[50].replace('"', ''):
+                    if ctid == splited_data[3].replace('"', ''):
+                        # logging.info('ctid: %s', ctid)
                         data_dict = {}
                         for index, element in enumerate(splited_data):
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[ctid].append(data_dict)
+                            
                 
                 elif pname == "GRIFF_EXTHIT":
                     if ctid == splited_data[2]:
@@ -360,7 +358,6 @@ class Tlog:
                             logging.info('element: %s', element)
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
-                    logging.info('ctid data dict ext: %s', self.ctid_data_dict)
                 
                 elif pname == "PACKS_EXTHIT":
                     if ctid == splited_data[2]:
@@ -370,6 +367,7 @@ class Tlog:
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
                         
+        # logging.info('ctid data dict: %s', self.ctid_data_dict)
         if pname == "GRIFF":
             self.griff_tlog_dict = {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.griff_tlog_dict)
