@@ -53,7 +53,7 @@ class PROCESSOR:
             
         outfile_writer = FileWriter()
         if self.payment_data_dict_list:
-            logging.info('reached here')
+            logging.info('reached here: %s', self.payment_data_dict_list)
             self.payment_data_dict["PAYMENT_TRANS_DATA"] = self.payment_data_dict_list
             outfile_writer.write_json_tlog_data(self.payment_data_dict)
         

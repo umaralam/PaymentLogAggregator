@@ -454,7 +454,7 @@ class LogPathFinder():
     
     def initialize_tomcat_path(self, section):
             """
-            Initialize griff tomcat path.
+            Initialize tomcat path.
             """
             try:
                 self.parse_transaction_logging(section)

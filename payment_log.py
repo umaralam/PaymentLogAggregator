@@ -91,6 +91,25 @@ class Main:
                         except Exception as error:
                             logging.warning(error)
                             
+                        # try:
+                        #     if config[hostname]["PRISM"] and i == 'PRISM':
+                        #         initializedPath_object.initialize_tomcat_path(i)
+                        #         logging.info('\n')
+                        #         if initializedPath_object.prism_tomcat_log_path_dict:
+                        #             logging.info('%s TOMCAT PATH INITIALIZED', i)
+                        #             formatter = "#" * 100
+                        #             logging.info('%s', formatter)
+                        #             for key, value in initializedPath_object.prism_tomcat_log_path_dict.items():
+                        #                 logging.info('%s : %s', key, value)
+                        #         else:
+                        #             logging.error('%s TOMCAT PATH NOT INITIALIZED', i)
+                        # except KeyError as error:
+                        #     logging.exception(error)
+                        # except ValueError as error:
+                        #     logging.warning('%s tomcat path not initialized. %s', i, error)
+                        # except Exception as error:
+                        #     logging.warning(error)
+                        
                         try:
                             if config[hostname]["PACKS"] and i == 'PACKS':
                                 initializedPath_object.initialize_tomcat_path(i)
