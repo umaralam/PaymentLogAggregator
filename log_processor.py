@@ -26,30 +26,68 @@ class PROCESSOR:
         hostname = socket.gethostname()
         for pname in self.config[hostname]:
             
-            if pname == "GRIFF":
-                if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"]:
-                    logging.debug('griff tomcat tlog path exists.')
-                    if tlogParser_object.parse_tomcat_tlog("GRIFF"):
-                        pass
-                    
-                if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TPTLOGAppender_log"]:
-                    logging.debug('griff tomcat external hit tlog path exists.')
-                    if tlogParser_object.parse_tomcat_tlog("GRIFF_EXTHIT"):
-                        pass
+            if pname == 'GRIFF':
+                try:
+                    if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"]:
+                        logging.debug('%s tomcat tlog path exists', pname)
+                        if tlogParser_object.parse_tlog("GRIFF"):
+                        # if tlogParser_object.parse_tomcat_tlog("GRIFF"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
                 
-            elif pname == "PACKS":
-                if self.initializedPath_object.packs_tomcat_log_path_dict["packs_PACKS_T_LOG_APPENDER.FILE_log"]:
-                    logging.debug('packs tomcat tlog path exists.')
-                    if tlogParser_object.parse_tomcat_tlog("PACKS"):
-                        pass
-                    
-                if self.initializedPath_object.packs_tomcat_log_path_dict["packs_EXTERNAL_HITS_APPENDER.FILE_log"]:
-                    logging.debug('packs tomcat external hit tlog path exists.')
-                    if tlogParser_object.parse_tomcat_tlog("PACKS_EXTHIT"):
-                        pass
+                try:
+                    if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TPTLOGAppender_log"]:
+                        logging.debug('%s tomcat external hit tlog path exists', pname)
+                        if tlogParser_object.parse_tlog("GRIFF_EXTHIT"):
+                        # if tlogParser_object.parse_tomcat_tlog("GRIFF_EXTHIT"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
                 
-            else:
-                pass
+            elif pname == 'PACKS':
+                try:
+                    if self.initializedPath_object.packs_tomcat_log_path_dict["packs_PACKS_T_LOG_APPENDER.FILE_log"]:
+                        logging.debug('%s tomcat tlog path exists', pname)
+                        if tlogParser_object.parse_tlog("PACKS"):
+                        # if tlogParser_object.parse_tomcat_tlog("PACKS"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
+                
+                try:
+                    if self.initializedPath_object.packs_tomcat_log_path_dict["packs_EXTERNAL_HITS_APPENDER.FILE_log"]:
+                        logging.debug('%s tomcat external hit tlog path exists', pname)
+                        if tlogParser_object.parse_tlog("PACKS_EXTHIT"):
+                        # if tlogParser_object.parse_tomcat_tlog("PACKS_EXTHIT"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
+                
+            elif pname == 'PRISM':
+                try:
+                    if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]:
+                        logging.debug('%s tomcat tlog path exists', pname)
+                        if tlogParser_object.parse_tlog("PRISM_TOMCAT"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
+                
+                try:
+                    if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_tlog_path"]:
+                        logging.debug('%s daemon tlog path exists', pname)
+                        if tlogParser_object.parse_tlog("PRISM_DEAMON"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
+                
+                try:
+                    if self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_tlog_path"]:
+                        logging.debug('%s smsd tlog path exists', pname)
+                        if tlogParser_object.parse_tlog("PRISM_SMSD"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
             
         outfile_writer = FileWriter()
         if self.payment_data_dict_list:

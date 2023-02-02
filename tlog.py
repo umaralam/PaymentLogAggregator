@@ -48,7 +48,7 @@ class Tlog:
         self.payment_data_dict = payment_data_dict
         self.config = config
     
-    def get_tomcat_tlog(self, pname):
+    def get_tlog(self, pname):
         """
         calling path finder method
         """
@@ -57,8 +57,10 @@ class Tlog:
 
         self.constructor_parameter_reinitialize()
         
-        self.tlog_files = logfile_object.get_tomcat_tlog_files(pname)
-        self.backup_tlog_files = logfile_object.get_tomcat_tlog_backup_files(pname)
+        self.tlog_files = logfile_object.get_tlog_files(pname)
+        
+        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+            self.backup_tlog_files = logfile_object.get_tlog_backup_files(pname)
             
         # logging.info('tlog files: %s', self.tlog_files)
         # logging.info('backup tlog files: %s', self.backup_tlog_files)
@@ -329,7 +331,6 @@ class Tlog:
         else:
             temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
             
-        logging.info('data list: %s', data_list)
         for ctid in temp_map:
             for data in data_list:
                 splited_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
@@ -343,7 +344,6 @@ class Tlog:
             
                 elif pname == "PACKS":
                     if ctid == splited_data[3].replace('"', ''):
-                        # logging.info('ctid: %s', ctid)
                         data_dict = {}
                         for index, element in enumerate(splited_data):
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
@@ -352,17 +352,14 @@ class Tlog:
                 
                 elif pname == "GRIFF_EXTHIT":
                     if ctid == splited_data[2]:
-                        # logging.info('splited data: %s', splited_data)
                         data_dict = {}
                         for index, element in enumerate(splited_data):
-                            logging.info('element: %s', element)
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
                 
                 elif pname == "PACKS_EXTHIT":
                     if ctid == splited_data[2]:
                         data_dict = {}
-                        logging.info('splitted data is: %s', splited_data)
                         for index, element in enumerate(splited_data):
                             data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                         self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
@@ -396,7 +393,6 @@ class Tlog:
         if pname == "GRIFF":
             for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
                 self.constructor_access_paramter_reinitialize()
-                logging.info('ctid is: %s', ctid)
                 for file in files:
                     try:
                         data = subprocess.check_output(f"cat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))

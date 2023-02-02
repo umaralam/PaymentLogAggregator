@@ -74,12 +74,12 @@ class Main:
                     for i in config[hostname]:
                         try:
                             if config[hostname]["GRIFF"] and i == 'GRIFF':
-                                initializedPath_object.initialize_tomcat_path(i)
-                                logging.info('\n')
+                                initializedPath_object.initialize_path(i)
                                 if initializedPath_object.griff_tomcat_log_path_dict:
-                                    logging.info('%s TOMCAT PATH INITIALIZED', i)
                                     formatter = "#" * 100
-                                    logging.info('%s', formatter)
+                                    logging.info('\n')
+                                    logging.info('%s TOMCAT PATH INITIALIZED \n %s', i, formatter)
+                                    # logging.info('%s', formatter)
                                     for key, value in initializedPath_object.griff_tomcat_log_path_dict.items():
                                         logging.info('%s : %s', key, value)
                                 else:
@@ -90,34 +90,15 @@ class Main:
                             logging.warning('%s tomcat path not initialized. %s', i, error)
                         except Exception as error:
                             logging.warning(error)
-                            
-                        # try:
-                        #     if config[hostname]["PRISM"] and i == 'PRISM':
-                        #         initializedPath_object.initialize_tomcat_path(i)
-                        #         logging.info('\n')
-                        #         if initializedPath_object.prism_tomcat_log_path_dict:
-                        #             logging.info('%s TOMCAT PATH INITIALIZED', i)
-                        #             formatter = "#" * 100
-                        #             logging.info('%s', formatter)
-                        #             for key, value in initializedPath_object.prism_tomcat_log_path_dict.items():
-                        #                 logging.info('%s : %s', key, value)
-                        #         else:
-                        #             logging.error('%s TOMCAT PATH NOT INITIALIZED', i)
-                        # except KeyError as error:
-                        #     logging.exception(error)
-                        # except ValueError as error:
-                        #     logging.warning('%s tomcat path not initialized. %s', i, error)
-                        # except Exception as error:
-                        #     logging.warning(error)
                         
                         try:
                             if config[hostname]["PACKS"] and i == 'PACKS':
-                                initializedPath_object.initialize_tomcat_path(i)
-                                logging.info('\n')
+                                initializedPath_object.initialize_path(i)
                                 if initializedPath_object.packs_tomcat_log_path_dict:
-                                    logging.info('%s TOMCAT PATH INITIALIZED', i)
                                     formatter = "#" * 100
-                                    logging.info('%s', formatter)
+                                    logging.info('\n')
+                                    logging.info('%s TOMCAT PATH INITIALIZED \n %s', i, formatter)
+                                    # logging.info('%s', formatter)
                                     for key, value in initializedPath_object.packs_tomcat_log_path_dict.items():
                                         logging.info('%s : %s', key, value)
                                 else:
@@ -128,19 +109,84 @@ class Main:
                             logging.warning('%s tomcat path not initialized. %s', i, error)
                         except Exception as error:
                             logging.warning(error)
-                except KeyError as ex:
-                    logging.error('invalid hostname key')
-            
-            uid = sys.argv[4]
-            
-            if num_argv == 5:
-                processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid, config)
-                processor_object.process()
-            else:
-                logging.error('xyz')
+                        
+                        try:
+                            if config[hostname]["PRISM"] and i == 'PRISM':
+                                if config[hostname]["PRISM"]["PRISM_TOMCAT"] != "":
+                                    try:
+                                        initializedPath_object.initialize_path(i)
+                                        formatter = "#" * 100
+                                        logging.info('\n')
+                                        logging.info('%s TOMCAT PATH INITIALIZED \n %s', i, formatter)
+                                        for key, value in initializedPath_object.prism_tomcat_log_path_dict.items():
+                                            logging.info('%s : %s', key, value)
+                                    except ValueError as error:
+                                        logging.warning('%s Tomcat path not initialized. %s', i, error)
+                                    except Exception as error:
+                                        logging.warning(error)
+                                else:
+                                    logging.error(
+                                                    '%s TOMCAT data not present in %s file,\
+                                                    Hence PRISM_TOMCAT logs will not be initialized and fetched', i, hostname
+                                                )
+                                
+                                if config[hostname]["PRISM"]["PRISM_DEAMON"] != "":
+                                    try:
+                                        initializedPath_object.initialize_path(i)
+                                        formatter = "#" * 100
+                                        logging.info('\n')
+                                        logging.info('%s DAEMON PATH INITIALIZED \n %s', i, formatter)
+                                        for key, value in initializedPath_object.prism_daemon_log_path_dict.items():
+                                            logging.info('%s : %s', key, value)
+                                    except ValueError as error:
+                                        logging.warning('%s path not initialized. %s', i, error)
+                                    except Exception as error:
+                                        logging.warning(error)
+                                else:
+                                    logging.error(
+                                                    '%s DEAMON data not present in %s file,\
+                                                    Hence PRISM_DEAMON logs will not be initialized and fetched', i, hostname
+                                                )
 
-                logging.info('Log aggregation finished.')
-                logging.info("**********************************")
+                                if config[hostname]["PRISM"]["PRISM_SMSD"] != "":
+                                    try:
+                                        initializedPath_object.initialize_path(i)
+                                        formatter = "#" * 100
+                                        logging.info('\n')
+                                        logging.info('%s SMS PATH INITIALIZED \n %s', i, formatter)
+                                        # logging.info('%s', formatter)
+                                        for key, value in initializedPath_object.prism_smsd_log_path_dict.items():
+                                            logging.info('%s : %s', key, value)
+                                    except ValueError as error:
+                                        logging.warning('%s path not initialized. %s', i, error)
+                                    except Exception as error:
+                                        logging.warning(error)
+                                else:
+                                    logging.error(
+                                                    '%s SMSD data not present in %s file,\
+                                                    Hence PRISM_SMSD logs will not be initialized and fetched', i, hostname
+                                                )
+                        except KeyError as error:
+                            logging.exception(error)
+                        except ValueError as error:
+                            logging.warning('any of the %s path not initialized', i)
+                        except Exception as error:
+                            logging.warning(error)
+                            
+                    uid = sys.argv[4]
+                    
+                    if num_argv == 5:
+                        processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid, config)
+                        processor_object.process()
+                    else:
+                        logging.error('Invalid number of argument')
+
+                        logging.info('Log aggregation finished.')
+                        logging.info("**********************************")
+                        
+                except KeyError as error:
+                    logging.exception(error)
+            
             
         end = datetime.now()
         logging.debug('end of execution time: %s', end)
