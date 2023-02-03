@@ -29,7 +29,7 @@ class LogFileFinder:
         self.s_date = datetime.strptime(datetime.strftime(self.start_date, "%Y%m%d"), "%Y%m%d")
         self.e_date = datetime.strptime(datetime.strftime(self.end_date, "%Y%m%d"), "%Y%m%d")
     
-    def get_tomcat_tlog_files(self, pname):
+    def get_tlog_files(self, pname):
         
         #re-initializing constructor parameters
         self.constructor_paramter_reinitialize()
@@ -62,8 +62,24 @@ class LogFileFinder:
             #current ext hit file
             self.tlog_files.append(self.initializedPath_object.packs_tomcat_log_path_dict["packs_EXTERNAL_HITS_APPENDER.FILE_log"])
         
+        elif pname == "PRISM_TOMCAT":
+            #current tlog file
+            self.tlog_files.append(f'{self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]}/TLOG_BILLING_REALTIME_*.tmp')
+            self.tlog_dir = self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]
+        
+        elif pname == "PRISM_DEAMON":
+            #current tlog file
+            self.tlog_files.append(f'{self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_tlog_path"]}/TLOG_BILLING_*.tmp')
+            self.tlog_dir = self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_tlog_path"]
+        
+        elif pname == "PRISM_SMSD":
+            #current tlog file
+            self.tlog_files.append(f'{self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_tlog_path"]}/TLOG_SMS_*.tmp')
+            self.tlog_dir = self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_tlog_path"]
+        
+        
         #process file for if pname == "GRIFF" or pname == "PACKS"
-        if pname == "GRIFF" or pname == "PACKS":
+        if pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
             path = Path(rf"{self.tlog_dir}")
             
             #method call to date range list
@@ -71,19 +87,34 @@ class LogFileFinder:
             
             for date in self.input_date:
                 # logging.info('search date is: %s', datetime.strftime(date, "%Y-%m-%d"))
-                input_date_formatted = datetime.strftime(date, "%Y-%m-%d")            
+                if pname == "GRIFF" or pname == "PACKS":
+                    input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
+                elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":           
+                    input_date_formatted = datetime.strftime(date, "%Y%m%d")
                 
                 #input dated file in the tlog directory
                 if pname == "GRIFF":
                     dated_tlog_files = [p for p in path.glob(f"griffTLog-{input_date_formatted}-*.csv")]
                 elif pname == "PACKS":
                     dated_tlog_files = [p for p in path.glob(f"packTlog-{input_date_formatted}-*.csv")]
+                elif pname == "PRISM_TOMCAT":
+                    dated_tlog_files = [p for p in path.glob(f"TLOG_BILLING_REALTIME_{input_date_formatted}_*..log")]
+                elif pname == "PRISM_DEAMON":
+                    dated_tlog_files = [p for p in path.glob(f"TLOG_BILLING_{input_date_formatted}_*..log")]
+                elif pname == "PRISM_SMSD":
+                    dated_tlog_files = [p for p in path.glob(f"TLOG_SMS_{input_date_formatted}_*..log")]
                     
                 if bool(dated_tlog_files):
                     if pname == "GRIFF":
-                        logging.info(f"griffTLog-{input_date_formatted}-*.csv file present" )
+                        logging.info(f"griffTLog-{input_date_formatted}-*.csv file present")
                     elif pname == "PACKS":
-                        logging.info(f"packTlog-{input_date_formatted}-*.csv file present" )
+                        logging.info(f"packTlog-{input_date_formatted}-*.csv file present")
+                    elif pname == "PRISM_TOMCAT":
+                        logging.info(f"TLOG_BILLING_REALTIME_{input_date_formatted}_*..log file present")
+                    elif pname == "PRISM_DEAMON":
+                        logging.info(f"TLOG_BILLING_{input_date_formatted}_*..log file present")
+                    elif pname == "PRISM_SMSD":
+                        logging.info(f"TLOG_SMS_{input_date_formatted}_*..log file present")
                         
                     for files in dated_tlog_files:
                         self.tlog_files.append(str(files))
@@ -92,29 +123,35 @@ class LogFileFinder:
                         logging.info(f"griffTLog-{input_date_formatted}-*.csv file not present" )
                     elif pname == "PACKS":
                         logging.info(f"packTlog-{input_date_formatted}-*.csv file not present" )
+                    elif pname == "PRISM_TOMCAT":
+                        logging.info(f"TLOG_BILLING_REALTIME_{input_date_formatted}_*..log file not present")
+                    elif pname == "PRISM_DEAMON":
+                        logging.info(f"TLOG_BILLING_{input_date_formatted}_*..log file not present")
+                    elif pname == "PRISM_SMSD":
+                        logging.info(f"TLOG_SMS_{input_date_formatted}_*..log file not present")
         
         return self.tlog_files
     
-    def get_tomcat_tlog_backup_files(self, pname):
+    def get_tlog_backup_files(self, pname):
         #re-initializing constructor parameters
         self.constructor_paramter_reinitialize()
         
         if pname == "GRIFF":    
-            #getting backup tlog files
+            #getting backup tlog files directory
             splitted_tlog_backup_path = str(self.initializedPath_object.griff_tomcat_log_path_dict['griff_TLOG_backup_log'])\
                                     .split("/")[0:-1]
         elif pname == "PACKS":
-            #getting backup tlog files
+            #getting backup tlog files directory
             splitted_tlog_backup_path = str(self.initializedPath_object.packs_tomcat_log_path_dict['packs_PACKS_T_LOG_APPENDER.FILE_backup_log'])\
                                 .split("/")[0:-1]
             
         elif pname == "GRIFF_EXTHIT":
-            #getting backup tlog files
+            #getting backup tlog files directory
             splitted_tlog_backup_path = str(self.initializedPath_object.griff_tomcat_log_path_dict['griff_TPTLOGAppender_backup_log'])\
                                     .split("/")[0:-1]
             
         elif pname == "PACKS_EXTHIT":
-            #getting backup tlog files
+            #getting backup tlog files directory
             splitted_tlog_backup_path = str(self.initializedPath_object.packs_tomcat_log_path_dict['packs_EXTERNAL_HITS_APPENDER.FILE_backup_log'])\
                                 .split("/")[0:-1]
                                 

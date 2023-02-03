@@ -13,12 +13,12 @@ class TlogParser:
         self.payment_data_dict_list = payment_data_dict_list
         self.payment_data_dict = payment_data_dict   
         
-    def parse_tomcat_tlog(self, pname):
+    def parse_tlog(self, pname):
         
         #tlog object
         tlog_object = Tlog(self.initializedPath_object, self.validation_object, self.payment_data_dict_list, self.payment_data_dict, self.config)
         
-        tlog_object.get_tomcat_tlog(pname)
+        tlog_object.get_tlog(pname)
         
         # ctid_msisdn_data, tlog_dict = tlog_object.get_tomcat_tlog(pname)
         
@@ -41,4 +41,10 @@ class TlogParser:
             #         logging.info('key not present: %s', ex)
                     
         elif pname == "PACKS_EXTHIT":
+            pass
+        elif pname == "PRISM_TOMCAT":
+            pass
+        elif pname == "PRISM_DEAMON":
+            pass
+        elif pname == "PRISM_SMSD":
             pass
