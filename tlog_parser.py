@@ -9,7 +9,7 @@ class TlogParser:
                     payment_data_dict_list, payment_data_dict,\
                     griff_tlog_dict, packs_tlog_dict,\
                     griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
-                    prism_ctid):
+                    prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict):
         
         self.initializedPath_object = initializedPath_object
         self.validation_object = validation_object
@@ -22,6 +22,8 @@ class TlogParser:
         self.packs_ext_hit_tlog_dict = packs_ext_hit_tlog_dict
         
         self.prism_ctid = prism_ctid
+        self.prism_tomcat_tlog_dict = prism_tomcat_tlog_dict
+        self.prism_daemon_tlog_dict = prism_daemon_tlog_dict
         
     def parse_tlog(self, pname):
         
@@ -30,7 +32,7 @@ class TlogParser:
                             self.payment_data_dict_list, self.payment_data_dict, self.config,\
                             self.griff_tlog_dict, self.packs_tlog_dict,\
                             self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
-                            self.prism_ctid)
+                            self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict)
         
         # tlog_object.get_tlog(pname)
         

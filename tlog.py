@@ -15,7 +15,7 @@ class Tlog:
                     payment_data_dict_list, payment_data_dict, config,\
                     griff_tlog_dict, packs_tlog_dict,\
                     griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
-                    prism_ctid):
+                    prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict):
         
         self.initializedPath_object = initializedPath_object
         self.validation_object = validation_object
@@ -51,6 +51,7 @@ class Tlog:
         #header data mapped tlogs
         self.griff_access_log_dict = {}
         self.packs_access_log_dict = {}
+        self.prism_access_log_dict = {}
         
         #log processor initialization parameter
         self.payment_data_dict_list = payment_data_dict_list
@@ -60,8 +61,10 @@ class Tlog:
         self.packs_tlog_dict = packs_tlog_dict
         self.griff_ext_hit_tlog_dict = griff_ext_hit_tlog_dict
         self.packs_ext_hit_tlog_dict = packs_ext_hit_tlog_dict
-        
+    
         self.prism_ctid = prism_ctid
+        self.prism_tomcat_tlog_dict = prism_tomcat_tlog_dict
+        self.prism_daemon_tlog_dict = prism_daemon_tlog_dict
     
     def get_tlog(self, pname):
         """
@@ -111,14 +114,21 @@ class Tlog:
                 logging.debug('packs tomcat access path exists.')
                 self.access_files = logfile_object.get_tomcat_access_files(pname)
         
+        elif pname == "PRISM_TOMCAT":
+            if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_access_path"]:
+                logging.debug('prism tomcat access path exists.')
+                self.access_files = logfile_object.get_tomcat_access_files(pname)
+        
         if self.access_files:
             self.ctid_based_accesslog_fetch(pname, self.access_files)
-            
-        if self.ctid_msisdn_map_dict and (self.tlog_files_with_ctid_msisdn or self.tlog_backup_files_with_ctid_msisdn):
-            if self.tlog_files_with_ctid_msisdn:
-                self.ctid_based_tlog_fetch(pname, self.tlog_files_with_ctid_msisdn, False)
-            if self.tlog_backup_files_with_ctid_msisdn:
-                self.ctid_based_tlog_fetch(pname, self.tlog_backup_files_with_ctid_msisdn, True)
+        
+        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+            if self.ctid_msisdn_map_dict and (self.tlog_files_with_ctid_msisdn\
+                                            or self.tlog_backup_files_with_ctid_msisdn):
+                if self.tlog_files_with_ctid_msisdn:
+                    self.ctid_based_tlog_fetch(pname, self.tlog_files_with_ctid_msisdn, False)
+                if self.tlog_backup_files_with_ctid_msisdn:
+                    self.ctid_based_tlog_fetch(pname, self.tlog_backup_files_with_ctid_msisdn, True)
         
         if self.tlog_record:
             logging.info('tlog record: %s', self.tlog_record)
@@ -129,7 +139,7 @@ class Tlog:
                     if record not in data_list:
                         data_list.append(record)
                     
-            self.tlog_record_header_mapping(pname, self.is_backup_file, data_list)
+            self.tlog_record_header_mapping(pname, data_list)
             # logging.info('data list: %s', data_list)
         
         if pname == "GRIFF" and self.griff_tlog_dict:
@@ -276,7 +286,7 @@ class Tlog:
         except Exception as ex:
             logging.info(ex)
             
-    def tlog_record_header_mapping(self, pname, is_backup, data_list):
+    def tlog_record_header_mapping(self, pname, data_list):
         
         #GRIFF tlog header mapping
         if pname == "GRIFF":
@@ -294,73 +304,123 @@ class Tlog:
             
         elif pname == "PACKS":
             header = [
-                        "PackTLogCreatedTimeStamp","THREAD_NAME","API_NAME","CTID","REQ_MSISDN","REQ_APPID","REQ_PACKID",\
-                        "REQ_OPERATOR","REQ_CIRCLE","SEL_OPERATOR","SEL_CIRCLE","REQ_ACTION","REQ_USERINFO","RES_USERINFO",\
-                        "REQ_AMOUNT","REQ_SERVICEKEY","REQ_EVENTKEY","REQ_ALL_PARAMS","BILLING_SERVICE_KEY","BILLING_URL_TEMPLATE",\
-                        "BILLING_URL_CALLED","BILLING_REQ_TIME_START","BILLING_REQ_TIME_END","BILLING_AMOUNT","BILLING_RES_STATUS",\
-                        "BILLING_RES_MESSAGE","CREDITS_BEFORE","CREDITS_AFTER","APP_NAME","PACK_NAME","SUB_TYPE","BILLING_MODE",\
-                        "BILLING_TYPE","CALLBACK_REGISTERED","RET_APPS","RET_PACKS","RET_STATUS","RET_ERROR_REASON","SEL_APPIDs",\
-                        "SEL_PACKIDs","SUBSCRIBER_ID","SUBS_STATUS_BEFORE","SUBS_STATUS_AFTER","REQ_ACTION_MODE","REQ_NEW_MSISDN",\
-                        "PACK_LEVEL_FILTER","APP_LEVEL_FILTER","COMMON_PARAM_FILTER","CHARGE_KEY","SOURCE_IP","GRIFF_RESPONSE",\
+                        "PackTLogCreatedTimeStamp","THREAD_NAME","API_NAME","CTID","REQ_MSISDN","REQ_APPID",\
+                        "REQ_PACKID","REQ_OPERATOR","REQ_CIRCLE","SEL_OPERATOR","SEL_CIRCLE","REQ_ACTION",\
+                        "REQ_USERINFO","RES_USERINFO","REQ_AMOUNT","REQ_SERVICEKEY","REQ_EVENTKEY",\
+                        "REQ_ALL_PARAMS","BILLING_SERVICE_KEY","BILLING_URL_TEMPLATE","BILLING_URL_CALLED",\
+                        "BILLING_REQ_TIME_START","BILLING_REQ_TIME_END","BILLING_AMOUNT","BILLING_RES_STATUS",\
+                        "BILLING_RES_MESSAGE","CREDITS_BEFORE","CREDITS_AFTER","APP_NAME","PACK_NAME","SUB_TYPE",\
+                        "BILLING_MODE","BILLING_TYPE","CALLBACK_REGISTERED","RET_APPS","RET_PACKS","RET_STATUS",\
+                        "RET_ERROR_REASON","SEL_APPIDs","SEL_PACKIDs","SUBSCRIBER_ID","SUBS_STATUS_BEFORE",\
+                        "SUBS_STATUS_AFTER","REQ_ACTION_MODE","REQ_NEW_MSISDN","PACK_LEVEL_FILTER",\
+                        "APP_LEVEL_FILTER","COMMON_PARAM_FILTER","CHARGE_KEY","SOURCE_IP","GRIFF_RESPONSE",\
                         "THIRD_PARTIES","TOTAL_TIMETAKEN","PACKS_TIMETAKEN","EXT_TIMETAKEN","TRAP_STATUS"
                     ]
         
         elif pname == "GRIFF_EXTHIT":
             header = [
-                        "TIMESTAMP","THREAD_NAME","CTID","STORENAME","EXTNAME","APINAME","HTTPMETHOD","HTTPSTATUSCODE","TIMETAKEN",\
-                        "PROXYHOST","PROXYPORT","URL","REQHEADERS","RQEPARAMS","REQBODY","RESPONSE"
+                        "TIMESTAMP","THREAD_NAME","CTID","STORENAME","EXTNAME","APINAME","HTTPMETHOD",\
+                        "HTTPSTATUSCODE","TIMETAKEN","PROXYHOST","PROXYPORT","URL","REQHEADERS","RQEPARAMS",\
+                        "REQBODY","RESPONSE"
                     ]
         
         elif pname == "PACKS_EXTHIT":
             header = [
-                        "TIMESTAMP","THREAD_NAME","CTID","APPID","PACKID","APINAME","EXTNAME","HTTPMETHOD","HTTPSTATUSCODE",\
-                        "TIMETAKEN","PROXYHOST","PROXYPORT","URL","REQHEADERS","RQEPARAMS","REQBODY","RESPONSE","RESPONSEHEADERS"
+                        "TIMESTAMP","THREAD_NAME","CTID","APPID","PACKID","APINAME","EXTNAME","HTTPMETHOD",\
+                        "HTTPSTATUSCODE","TIMETAKEN","PROXYHOST","PROXYPORT","URL","REQHEADERS","RQEPARAMS",\
+                        "REQBODY","RESPONSE","RESPONSEHEADERS"
+                    ]
+        
+        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
+        
+            header = [
+                        "TIMESTAMP","THREAD","SITE_ID","MSISDN","SUB_TYPE","SBN_ID/EVT_ID","SRV_KEYWORD",\
+                        "CHARGE_TYPE","PARENT_KEYWORD","AMOUNT","MODE","USER","REQUEST_DATE","INVOICE_DATE",\
+                        "EXPIRY_DATE","RETRY_COUNT","CYCLE_STATUS","GRACE_COUNT","GRACE_RETRY_COUNT",\
+                        "NEW_SRV_KEYWORD","INFER_SUB_STATUS","CHARGE_KEYWORD","TRIGGER_ID","PACK_KEY",\
+                        "PARENT_ID","APP_NAME","SITE_NAME","FLOW_TASKS","CONTENT_ID","CAMPAIGN_ID",\
+                        "TOTAL_CHG_AMNT","RECO","TASK_TYPE","TASK_STATUS","PAYMENT_STATUS","CHARGE_SCHEDULE",\
+                        "NEXT_BILL_DATE"
+                    ]
+        
+        elif pname == "PRISM_SMSD":
+            header = [
+                        "TIMESTAMP","THREAD","SITE_ID","MSISDN","SRNO","SRVCODE","MSG","HANDLER",\
+                        "STATUS","REMARKS","TIME_TAKEN","SMS_INFO"
                     ]
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
             temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
             
-        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
+        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
             temp_map = self.prism_ctid
             
         for ctid in temp_map:
             if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
                 for data in data_list:
-                    splited_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
+                    splitted_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
                     
                     if pname == "GRIFF":
-                        if ctid == splited_data[1].replace('"', '').strip():
+                        if ctid == splitted_data[1].replace('"', '').strip():
                             data_dict = {}
-                            for index, element in enumerate(splited_data):
+                            for index, element in enumerate(splitted_data):
                                 data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                             self.ctid_data_dict[ctid].append(data_dict)
                 
                     elif pname == "PACKS":
-                        if ctid == splited_data[3].replace('"', ''):
+                        if ctid == splitted_data[3].replace('"', ''):
                             data_dict = {}
-                            for index, element in enumerate(splited_data):
+                            for index, element in enumerate(splitted_data):
                                 data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                             self.ctid_data_dict[ctid].append(data_dict)
                                 
                     
                     elif pname == "GRIFF_EXTHIT":
-                        if ctid == str(splited_data[2]).replace('"', ''):
+                        if ctid == str(splitted_data[2]).replace('"', ''):
                             data_dict = {}
-                            for index, element in enumerate(splited_data):
+                            for index, element in enumerate(splitted_data):
                                 data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                             self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
                     
                     elif pname == "PACKS_EXTHIT":
-                        if ctid == str(splited_data[2]).replace('"', ''):
+                        if ctid == str(splitted_data[2]).replace('"', ''):
                             data_dict = {}
-                            for index, element in enumerate(splited_data):
+                            for index, element in enumerate(splitted_data):
                                 data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                             self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
             
-            elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
-                pass
+            elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
+                for data in data_list:
+                    splitted_data = str(data).split("|")
+                    logging.info('splitted data: %s', splitted_data)
+                    
+                    data_dict = {}
+                    flow_tasks_element = []
+                    index_count = 27
+                    # logging.info('splitted data length: %s', len(splitted_data))
+                    for index, element in enumerate(splitted_data):
+                        if index <= 26:
+                            data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip().rstrip(":")
+                        elif index <= len(splitted_data) - 6:
+                            flow_tasks_element.append(element.replace('"', '').replace("'", '"').strip())
+                            data_dict[header[index_count]] = flow_tasks_element
+                            
+                        elif index <= len(splitted_data) - 2:
+                            index_count += 1
+                            data_dict[header[index_count]] = element.replace('"', '').replace("'", '"').strip()
                         
-        # logging.info('ctid data dict: %s', self.ctid_data_dict)
+                        elif index == len(splitted_data) - 1:
+                            # logging.info('index: %s', index)
+                            try:
+                                for i, td in enumerate(element.split("=")[1].split("]")[0].split(",")):
+                                    index_count += 1
+                                    data_dict[header[index_count]] = td.replace('"', '').replace("'", '"').strip()
+                            except IndexError as error:
+                                logging.exception(error)
+                    self.ctid_data_dict[ctid].append(data_dict)
+                logging.info('prism ctid data dict: %s', self.ctid_data_dict)
+                    
+                        
         if pname == "GRIFF":
             self.griff_tlog_dict = {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.griff_tlog_dict)
@@ -380,35 +440,26 @@ class Tlog:
             self.packs_ext_hit_tlog_dict = {"PACKS_EXT_HIT_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.packs_ext_hit_tlog_dict)
             logging.info('packs ext tlogs: %s', str(self.packs_ext_hit_tlog_dict).replace("'", '"'))
+        
+        elif pname == "PRISM_TOMCAT":
+            self.prism_tomcat_tlog_dict = {"PRISM_REALTIME_BILLING_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
+            self.payment_data_dict_list.append(self.prism_tomcat_tlog_dict)
+            logging.info('prism realtime billing tlogs: %s', str(self.prism_tomcat_tlog_dict).replace("'", '"'))
+        
+        elif pname == "PRISM_DEAMON":
+            self.prism_daemon_tlog_dict = {"PRISM_BILLING_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
+            self.payment_data_dict_list.append(self.prism_daemon_tlog_dict)
+            logging.info('prism billing tlogs: %s', str(self.prism_daemon_tlog_dict).replace("'", '"'))
+            
+        
             
         
         # logging.info('json tlog data: %s',json.dumps(self.payment_tlog_dict))
             
     
     def ctid_based_accesslog_fetch(self, pname, files):
-        if pname == "GRIFF":
-            for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
-                self.constructor_access_paramter_reinitialize()
-                for file in files:
-                    try:
-                        data = subprocess.check_output(f"cat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
-                        self.access_record.append(data)
-                        
-                        if self.access_record:
-                            logging.info('griff access record: %s', self.access_record)
-                            data_list = []
-                            for data in self.access_record:
-                                logging.info('data in tlog: %s', data)
-                                for record in str(data).splitlines():
-                                    if record:
-                                        logging.info('access rec: %s', record)
-                                        data_list.append(record)
-                                # calling access data map function
-                        self.ctid_access_data_dict[f"{ctid}"].append(data_list)
-                    except Exception as ex:
-                        logging.info(ex)
-                        
-        elif pname == "PACKS":
+        #access log fetch based on ctid and msisdn in case of packs
+        if pname == "PACKS":
             for file in files:
                 try:
                     data = subprocess.check_output(f"cat {file} | grep -a {self.validation_object.fmsisdn}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
@@ -420,6 +471,34 @@ class Tlog:
                 except Exception as ex:
                     logging.info(ex)
         
+        elif pname == "GRIFF" or pname == "PRISM_TOMCAT":
+            if pname == "GRIFF":
+                temp_ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
+            elif pname == "PRISM_TOMCAT":
+                temp_ctid_map = self.prism_ctid
+            
+            for ctid in temp_ctid_map:
+                self.constructor_access_paramter_reinitialize()
+                for file in files:
+                    try:
+                        data = subprocess.check_output(f"cat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                        self.access_record.append(data)
+                        
+                        if self.access_record:
+                            logging.info('%s access record: %s', pname, self.access_record)
+                            data_list = []
+                            for data in self.access_record:
+                                logging.info('data in access log: %s', data)
+                                for record in str(data).splitlines():
+                                    if record:
+                                        logging.info('access rec: %s', record)
+                                        data_list.append(record)
+                                # calling access data map function
+                        self.ctid_access_data_dict[f"{ctid}"].append(data_list)
+                    except Exception as ex:
+                        logging.info(ex)
+                        
+        
         if self.ctid_access_data_dict:
             self.access_data_mapping(pname)
             
@@ -429,7 +508,6 @@ class Tlog:
         logging.info('ctid based access data dict: %s', self.ctid_access_data_dict)
         
         if pname == "GRIFF":
-            # self.griff_access_log_dict = {"GRIFF_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
             self.griff_access_log_dict = {"GRIFF_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
             self.payment_data_dict_list.append(self.griff_access_log_dict)
             logging.info('griff access logs: %s', self.griff_access_log_dict)
@@ -438,6 +516,11 @@ class Tlog:
             self.packs_access_log_dict = {"PACKS_ACCESS_LOG": dict(self.ctid_access_data_dict)}
             self.payment_data_dict_list.append(self.packs_access_log_dict)
             logging.info('packs access logs: %s', self.packs_access_log_dict)
+        
+        elif pname == "PRISM_TOMCAT":
+            self.prism_access_log_dict = {"PRISM_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
+            self.payment_data_dict_list.append(self.prism_access_log_dict)
+            logging.info('prism access logs: %s', self.prism_access_log_dict)
             
     def constructor_parameter_reinitialize(self):
         self.tlog_files = []

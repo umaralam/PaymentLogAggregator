@@ -207,8 +207,13 @@ class LogFileFinder:
             
             elif pname == "PACKS":
                 access_log_prefix = self.config[hostname]["PACKS"]["PACKS_TOMCAT"]["ACCESS_LOG_PREFIX"]
-                access_log_suffix = self.config[hostname]["GRIFF"]["GRIFF_TOMCAT"]["ACCESS_LOG_SUFFIX"]
+                access_log_suffix = self.config[hostname]["PACKS"]["PACKS_TOMCAT"]["ACCESS_LOG_SUFFIX"]
                 access_log_path = self.initializedPath_object.packs_tomcat_log_path_dict["packs_tomcat_access_path"]
+            
+            elif pname == "PRISM_TOMCAT":
+                access_log_prefix = self.config[hostname]["PRISM"]["PRISM_TOMCAT"]["ACCESS_LOG_PREFIX"]
+                access_log_suffix = self.config[hostname]["PRISM"]["PRISM_TOMCAT"]["ACCESS_LOG_SUFFIX"]
+                access_log_path = self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_access_path"]
         
         except KeyError as ex:
             logging.info('key error: %s', ex)

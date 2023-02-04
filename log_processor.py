@@ -25,13 +25,15 @@ class PROCESSOR:
         self.packs_ext_hit_tlog_dict = {}
         
         self.prism_ctid = []
+        self.prism_tomcat_tlog_dict = {}
+        self.prism_daemon_tlog_dict = {}
     
     def process(self):
         tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object, self.config,\
                                         self.payment_data_dict_list, self.payment_data_dict,\
                                         self.griff_tlog_dict, self.packs_tlog_dict,\
                                         self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
-                                        self.prism_ctid)
+                                        self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict)
         
         hostname = socket.gethostname()
         for pname in self.config[hostname]:
