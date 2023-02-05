@@ -67,10 +67,30 @@ class LogFileFinder:
             self.tlog_files.append(f'{self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]}/TLOG_BILLING_REALTIME_*.tmp')
             self.tlog_dir = self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]
         
+        elif pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP":
+            #current generic http req-resp tlog files
+            self.tlog_files.append(f'{self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_generic_http_handler_req_resp_path"]}/TLOG_REQUEST_RESPONSE_GENERIC_HTTP_*.tmp')
+            self.tlog_dir = self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_generic_http_handler_req_resp_path"]
+        
+        elif pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP":
+            #current generic soap req-resp tlog files
+            self.tlog_files.append(f'{self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_generic_soap_handler_req_resp_path"]}/TLOG_REQUEST_RESPONSE_*.tmp')
+            self.tlog_dir = self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_generic_soap_handler_req_resp_path"]
+        
         elif pname == "PRISM_DEAMON":
             #current tlog file
             self.tlog_files.append(f'{self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_tlog_path"]}/TLOG_BILLING_*.tmp')
             self.tlog_dir = self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_tlog_path"]
+        
+        elif pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP":
+            #current generic http req-resp tlog files
+            self.tlog_files.append(f'{self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_generic_http_handler_req_resp_path"]}/TLOG_REQUEST_RESPONSE_GENERIC_HTTP_*.tmp')
+            self.tlog_dir = self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_generic_http_handler_req_resp_path"]
+        
+        elif pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP":
+            #current generic soap req-resp tlog files
+            self.tlog_files.append(f'{self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_generic_soap_handler_req_resp_path"]}/TLOG_REQUEST_RESPONSE_*.tmp')
+            self.tlog_dir = self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_generic_soap_handler_req_resp_path"]
         
         elif pname == "PRISM_SMSD":
             #current tlog file
@@ -79,7 +99,11 @@ class LogFileFinder:
         
         
         #process file for if pname == "GRIFF" or pname == "PACKS"
-        if pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
+        if pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON"\
+                or pname == "PRISM_SMSD" or pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP" or\
+                pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP" or pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP" or\
+                pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP":
+            
             path = Path(rf"{self.tlog_dir}")
             
             #method call to date range list
@@ -88,8 +112,13 @@ class LogFileFinder:
             for date in self.input_date:
                 # logging.info('search date is: %s', datetime.strftime(date, "%Y-%m-%d"))
                 if pname == "GRIFF" or pname == "PACKS":
+                    
                     input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
-                elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":           
+                
+                elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD" or\
+                        pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP" or\
+                        pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP":           
+                    
                     input_date_formatted = datetime.strftime(date, "%Y%m%d")
                 
                 #input dated file in the tlog directory
@@ -99,8 +128,16 @@ class LogFileFinder:
                     dated_tlog_files = [p for p in path.glob(f"packTlog-{input_date_formatted}-*.csv")]
                 elif pname == "PRISM_TOMCAT":
                     dated_tlog_files = [p for p in path.glob(f"TLOG_BILLING_REALTIME_{input_date_formatted}_*..log")]
+                elif pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP":
+                    dated_tlog_files = [p for p in path.glob(f"TLOG_REQUEST_RESPONSE_GENERIC_HTTP_{input_date_formatted}_*..log")]
+                elif pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP":
+                    dated_tlog_files = [p for p in path.glob(f"TLOG_REQUEST_RESPONSE_{input_date_formatted}_*..log")]
                 elif pname == "PRISM_DEAMON":
                     dated_tlog_files = [p for p in path.glob(f"TLOG_BILLING_{input_date_formatted}_*..log")]
+                elif pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP":
+                    dated_tlog_files = [p for p in path.glob(f"TLOG_REQUEST_RESPONSE_GENERIC_HTTP_{input_date_formatted}_*..log")]
+                elif pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP":
+                    dated_tlog_files = [p for p in path.glob(f"TLOG_REQUEST_RESPONSE_{input_date_formatted}_*..log")]
                 elif pname == "PRISM_SMSD":
                     dated_tlog_files = [p for p in path.glob(f"TLOG_SMS_{input_date_formatted}_*..log")]
                     
@@ -111,13 +148,22 @@ class LogFileFinder:
                         logging.info(f"packTlog-{input_date_formatted}-*.csv file present")
                     elif pname == "PRISM_TOMCAT":
                         logging.info(f"TLOG_BILLING_REALTIME_{input_date_formatted}_*..log file present")
+                    elif pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_GENERIC_HTTP_{input_date_formatted}_*..log file present")
+                    elif pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_{input_date_formatted}_*..log file present")
                     elif pname == "PRISM_DEAMON":
                         logging.info(f"TLOG_BILLING_{input_date_formatted}_*..log file present")
+                    elif pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_GENERIC_HTTP_{input_date_formatted}_*..log file present")
+                    elif pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_{input_date_formatted}_*..log file present")
                     elif pname == "PRISM_SMSD":
                         logging.info(f"TLOG_SMS_{input_date_formatted}_*..log file present")
                         
                     for files in dated_tlog_files:
                         self.tlog_files.append(str(files))
+                    logging.info('tlog files ex: %s', self.tlog_files)
                 else:
                     if pname == "GRIFF":
                         logging.info(f"griffTLog-{input_date_formatted}-*.csv file not present" )
@@ -125,8 +171,16 @@ class LogFileFinder:
                         logging.info(f"packTlog-{input_date_formatted}-*.csv file not present" )
                     elif pname == "PRISM_TOMCAT":
                         logging.info(f"TLOG_BILLING_REALTIME_{input_date_formatted}_*..log file not present")
+                    elif pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_GENERIC_HTTP_{input_date_formatted}_*..log file not present")
+                    elif pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_{input_date_formatted}_*..log file not present")
                     elif pname == "PRISM_DEAMON":
                         logging.info(f"TLOG_BILLING_{input_date_formatted}_*..log file not present")
+                    elif pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_GENERIC_HTTP_{input_date_formatted}_*..log file not present")
+                    elif pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP":
+                        logging.info(f"TLOG_REQUEST_RESPONSE_{input_date_formatted}_*..log file not present")
                     elif pname == "PRISM_SMSD":
                         logging.info(f"TLOG_SMS_{input_date_formatted}_*..log file not present")
         

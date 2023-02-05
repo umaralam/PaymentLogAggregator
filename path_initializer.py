@@ -37,12 +37,18 @@ class LogPathFinder():
         self.packs_process_home_directory = "packs_process_home_directory"
         self.packs_tomcat_access_path = "packs_tomcat_access_path"
         
-        #prism catalina home and access path paramter, tlog path parameters
+        #prism catalina home and access path paramter, tlog , req-resp path parameters
         self.prism_process_home_directory = "prism_process_home_directory"
         self.prism_tomcat_access_path = "prism_tomcat_access_path"
         self.prism_tomcat_tlog_path = "prism_tomcat_tlog_path"
         self.prism_daemon_tlog_path = "prism_daemon_tlog_path"
         self.prism_smsd_tlog_path = "prism_smsd_tlog_path"
+        self.prism_tomcat_generic_http_handler_req_resp_path = "prism_tomcat_generic_http_handler_req_resp_path"
+        self.prism_tomcat_generic_soap_handler_req_resp_path = "prism_tomcat_generic_soap_handler_req_resp_path"
+        self.prism_tomcat_callbackV2_req_resp_path = "prism_tomcat_callbackV2_req_resp_path"
+        self.prism_daemon_generic_http_handler_req_resp_path = "prism_daemon_generic_http_handler_req_resp_path"
+        self.prism_daemon_generic_soap_handler_req_resp_path = "prism_daemon_generic_soap_handler_req_resp_path"
+        self.prism_daemon_callbackV2_req_resp_path = "prism_daemon_callbackV2_req_resp_path"
         
         #boolean path paramters
         self.is_griff_access_path = False
@@ -216,9 +222,12 @@ class LogPathFinder():
             try:
                 if self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR'] != "":
                     self.prism_tomcat_log_path_dict[self.prism_tomcat_tlog_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/BILLING_REALTIME"
+                    self.prism_tomcat_log_path_dict[self.prism_tomcat_generic_http_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE_GENERIC_HTTP"
+                    self.prism_tomcat_log_path_dict[self.prism_tomcat_generic_soap_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE"
+                    self.prism_tomcat_log_path_dict[self.prism_tomcat_callbackV2_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/CBCK-V2-REQ-RESPONSE"
                     # self.is_tomcat_tlog_path = True
                 else:
-                    logging.error('%s tomcat TRANS_BASE_DIR path not available in %s file, hence tomcat tlog will not be fetched', pname, hostname) 
+                    logging.error('%s tomcat TRANS_BASE_DIR path not available in %s file, hence tomcat tlog path will not be processed', pname, hostname) 
                 
                 if self.config[hostname]['PRISM']['PRISM_TOMCAT']['LOG4J2_XML'] != "":
                     log4j2_path = self.config[hostname]['PRISM']['PRISM_TOMCAT']['LOG4J2_XML']
@@ -229,6 +238,9 @@ class LogPathFinder():
             
                 if self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR'] != "":
                     self.prism_daemon_log_path_dict[self.prism_daemon_tlog_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/BILLING"
+                    self.prism_daemon_log_path_dict[self.prism_daemon_generic_http_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE_GENERIC_HTTP"
+                    self.prism_daemon_log_path_dict[self.prism_daemon_generic_soap_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE"
+                    self.prism_daemon_log_path_dict[self.prism_daemon_callbackV2_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/CBCK-V2-REQ-RESPONSE"
                     # self.is_tomcat_tlog_path = True
                 else:
                     logging.error('%s daemon TRANS_BASE_DIR path not available in %s file, hence tomcat tlog will not be fetched', pname, hostname) 

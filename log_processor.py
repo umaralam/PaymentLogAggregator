@@ -1,5 +1,7 @@
+from collections import defaultdict
 import logging
 import socket
+from typing import DefaultDict
 from tlog_parser import TlogParser
 from outfile_writer import FileWriter
 
@@ -27,13 +29,24 @@ class PROCESSOR:
         self.prism_ctid = []
         self.prism_tomcat_tlog_dict = {}
         self.prism_daemon_tlog_dict = {}
+        self.prism_daemon_tlog_thread_dict = DefaultDict(list)
+        self.prism_tomcat_tlog_thread_dict = defaultdict(list)
+        self.prism_tomcat_handler_generic_http_req_resp_dict = {}
+        self.prism_daemon_handler_generic_http_req_resp_dict = {}
+        self.prism_tomcat_handler_generic_soap_req_resp_dict = {}
+        self.prism_daemon_handler_generic_soap_req_resp_dict = {}
     
     def process(self):
         tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object, self.config,\
                                         self.payment_data_dict_list, self.payment_data_dict,\
                                         self.griff_tlog_dict, self.packs_tlog_dict,\
                                         self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
-                                        self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict)
+                                        self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
+                                        self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict,\
+                                        self.prism_tomcat_handler_generic_http_req_resp_dict,\
+                                        self.prism_daemon_handler_generic_http_req_resp_dict,\
+                                        self.prism_tomcat_handler_generic_soap_req_resp_dict,\
+                                        self.prism_daemon_handler_generic_soap_req_resp_dict)
         
         hostname = socket.gethostname()
         for pname in self.config[hostname]:
