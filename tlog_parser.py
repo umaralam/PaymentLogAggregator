@@ -14,7 +14,10 @@ class TlogParser:
                     prism_tomcat_handler_generic_http_req_resp_dict,\
                     prism_daemon_handler_generic_http_req_resp_dict,\
                     prism_tomcat_handler_generic_soap_req_resp_dict,\
-                    prism_daemon_handler_generic_soap_req_resp_dict):
+                    prism_daemon_handler_generic_soap_req_resp_dict,\
+                    prism_tomcat_request_log_dict, prism_daemon_request_log_dict,\
+                    prism_tomcat_callbackV2_log_dict, prism_daemon_callbackV2_log_dict,\
+                    prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict):
         
         self.initializedPath_object = initializedPath_object
         self.validation_object = validation_object
@@ -37,6 +40,13 @@ class TlogParser:
         self.prism_tomcat_handler_generic_soap_req_resp_dict = prism_tomcat_handler_generic_soap_req_resp_dict
         self.prism_daemon_handler_generic_soap_req_resp_dict = prism_daemon_handler_generic_soap_req_resp_dict
         
+        self.prism_tomcat_request_log_dict = prism_tomcat_request_log_dict
+        self.prism_daemon_request_log_dict = prism_daemon_request_log_dict
+        self.prism_tomcat_callbackV2_log_dict = prism_tomcat_callbackV2_log_dict
+        self.prism_daemon_callbackV2_log_dict = prism_daemon_callbackV2_log_dict
+        self.prism_tomcat_perf_log_dict = prism_tomcat_perf_log_dict
+        self.prism_daemon_perf_log_dict = prism_daemon_perf_log_dict
+        
     def parse_tlog(self, pname):
         
         #tlog object
@@ -49,7 +59,10 @@ class TlogParser:
                             self.prism_tomcat_handler_generic_http_req_resp_dict,\
                             self.prism_daemon_handler_generic_http_req_resp_dict,\
                             self.prism_tomcat_handler_generic_soap_req_resp_dict,\
-                            self.prism_daemon_handler_generic_soap_req_resp_dict)
+                            self.prism_daemon_handler_generic_soap_req_resp_dict,\
+                            self.prism_tomcat_request_log_dict, self.prism_daemon_request_log_dict,\
+                            self.prism_tomcat_callbackV2_log_dict, self.prism_daemon_callbackV2_log_dict,\
+                            self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict)
         
         # tlog_object.get_tlog(pname)
         
@@ -72,6 +85,7 @@ class TlogParser:
                         
                         for ctid in self.griff_ext_hit_tlog_dict["GRIFF_EXT_HIT_TLOG"][f"{self.validation_object.fmsisdn}"]:
                             self.prism_ctid.append(ctid)
+                            logging.info('ctid present in prism ctid: %s', self.prism_ctid)
                     except TypeError as error:
                         logging.exception(error)
             except KeyError as error:
@@ -97,7 +111,7 @@ class TlogParser:
                     try:
                         for ctid in self.packs_ext_hit_tlog_dict["PACKS_EXT_HIT_TLOG"][f"{self.validation_object.fmsisdn}"]:
                             if ctid in self.prism_ctid:
-                                logging.info('ctid present in prism ctid')
+                                logging.info('ctid present in prism ctid: %s', self.prism_ctid)
                             else:
                                 self.prism_ctid.append(ctid)
                     except TypeError as error:
@@ -121,18 +135,42 @@ class TlogParser:
             #fetching prism tomcat generic soap handler request response
             if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_generic_soap_handler_req_resp_path"]:
                 tlog_object.get_tlog("PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP")
+            
+            #fetching prism tomcat request response and event callback v2 included
+            if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_req_resp_path"]:
+                tlog_object.get_tlog("PRISM_TOMCAT_REQ_RESP")
+            
+            #fetching prism tomcat callback v2 request response
+            if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_callbackV2_req_resp_path"]:
+                tlog_object.get_tlog("PRISM_TOMCAT_CALLBACK_V2_REQ_RESP")
+            
+            #fetching prism tomcat perf log
+            if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_perf_log_path"]:
+                tlog_object.get_tlog("PRISM_TOMCAT_PERF_LOG")
                 
         elif pname == "PRISM_DEAMON":
             # fetching prism daemon tlog
             tlog_object.get_tlog(pname)
             
-            #fetching prism tomcat generic http handler request response
+            #fetching prism daemon generic http handler request response
             if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_generic_http_handler_req_resp_path"]:
                 tlog_object.get_tlog("PRISM_DAEMON_GENERIC_HTTP_REQ_RESP")
             
-            #fetching prism tomcat generic soap handler request response
+            #fetching prism daemon generic soap handler request response
             if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_generic_soap_handler_req_resp_path"]:
                 tlog_object.get_tlog("PRISM_DAEMON_GENERIC_SOAP_REQ_RESP")
+            
+            #fetching prism daemon request response and event callback v2 included
+            if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_req_resp_path"]:
+                tlog_object.get_tlog("PRISM_DAEMON_REQ_RESP")
+            
+            #fetching prism daemon callback v2 request response
+            if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_callbackV2_req_resp_path"]:
+                tlog_object.get_tlog("PRISM_DAEMON_CALLBACK_V2_REQ_RESP")
+            
+            #fetching prism daemon perf log
+            if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_perf_log_path"]:
+                tlog_object.get_tlog("PRISM_DAEMON_PERF_LOG")
         
         elif pname == "PRISM_SMSD":
             tlog_object.get_tlog(pname)

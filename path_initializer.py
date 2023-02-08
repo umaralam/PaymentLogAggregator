@@ -46,9 +46,13 @@ class LogPathFinder():
         self.prism_tomcat_generic_http_handler_req_resp_path = "prism_tomcat_generic_http_handler_req_resp_path"
         self.prism_tomcat_generic_soap_handler_req_resp_path = "prism_tomcat_generic_soap_handler_req_resp_path"
         self.prism_tomcat_callbackV2_req_resp_path = "prism_tomcat_callbackV2_req_resp_path"
+        self.prism_tomcat_req_resp_path = "prism_tomcat_req_resp_path"
+        self.prism_tomcat_perf_log_path = "prism_tomcat_perf_log_path"
         self.prism_daemon_generic_http_handler_req_resp_path = "prism_daemon_generic_http_handler_req_resp_path"
         self.prism_daemon_generic_soap_handler_req_resp_path = "prism_daemon_generic_soap_handler_req_resp_path"
         self.prism_daemon_callbackV2_req_resp_path = "prism_daemon_callbackV2_req_resp_path"
+        self.prism_daemon_req_resp_path = "prism_daemon_req_resp_path"
+        self.prism_daemon_perf_log_path = "prism_daemon_perf_log_path"
         
         #boolean path paramters
         self.is_griff_access_path = False
@@ -225,6 +229,8 @@ class LogPathFinder():
                     self.prism_tomcat_log_path_dict[self.prism_tomcat_generic_http_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE_GENERIC_HTTP"
                     self.prism_tomcat_log_path_dict[self.prism_tomcat_generic_soap_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE"
                     self.prism_tomcat_log_path_dict[self.prism_tomcat_callbackV2_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/CBCK-V2-REQ-RESPONSE"
+                    self.prism_tomcat_log_path_dict[self.prism_tomcat_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/REQUEST_LOG"
+                    self.prism_tomcat_log_path_dict[self.prism_tomcat_perf_log_path] = f"{self.config[hostname]['PRISM']['PRISM_TOMCAT']['TRANS_BASE_DIR']}/TLOG/PERF"
                     # self.is_tomcat_tlog_path = True
                 else:
                     logging.error('%s tomcat TRANS_BASE_DIR path not available in %s file, hence tomcat tlog path will not be processed', pname, hostname) 
@@ -241,6 +247,8 @@ class LogPathFinder():
                     self.prism_daemon_log_path_dict[self.prism_daemon_generic_http_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE_GENERIC_HTTP"
                     self.prism_daemon_log_path_dict[self.prism_daemon_generic_soap_handler_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/REQUEST_RESPONSE"
                     self.prism_daemon_log_path_dict[self.prism_daemon_callbackV2_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/CBCK-V2-REQ-RESPONSE"
+                    self.prism_daemon_log_path_dict[self.prism_daemon_req_resp_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/REQUEST_LOG"
+                    self.prism_daemon_log_path_dict[self.prism_daemon_perf_log_path] = f"{self.config[hostname]['PRISM']['PRISM_DEAMON']['TRANS_BASE_DIR']}/TLOG/PERF"
                     # self.is_tomcat_tlog_path = True
                 else:
                     logging.error('%s daemon TRANS_BASE_DIR path not available in %s file, hence tomcat tlog will not be fetched', pname, hostname) 

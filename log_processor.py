@@ -35,6 +35,12 @@ class PROCESSOR:
         self.prism_daemon_handler_generic_http_req_resp_dict = {}
         self.prism_tomcat_handler_generic_soap_req_resp_dict = {}
         self.prism_daemon_handler_generic_soap_req_resp_dict = {}
+        self.prism_tomcat_request_log_dict = {}
+        self.prism_daemon_request_log_dict = {}
+        self.prism_tomcat_callbackV2_log_dict = {}
+        self.prism_daemon_callbackV2_log_dict = {}
+        self.prism_tomcat_perf_log_dict = {}
+        self.prism_daemon_perf_log_dict = {}
     
     def process(self):
         tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object, self.config,\
@@ -46,7 +52,10 @@ class PROCESSOR:
                                         self.prism_tomcat_handler_generic_http_req_resp_dict,\
                                         self.prism_daemon_handler_generic_http_req_resp_dict,\
                                         self.prism_tomcat_handler_generic_soap_req_resp_dict,\
-                                        self.prism_daemon_handler_generic_soap_req_resp_dict)
+                                        self.prism_daemon_handler_generic_soap_req_resp_dict,\
+                                        self.prism_tomcat_request_log_dict, self.prism_daemon_request_log_dict,\
+                                        self.prism_tomcat_callbackV2_log_dict, self.prism_daemon_callbackV2_log_dict,\
+                                        self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict)
         
         hostname = socket.gethostname()
         for pname in self.config[hostname]:
