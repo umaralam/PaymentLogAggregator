@@ -17,7 +17,8 @@ class TlogParser:
                     prism_daemon_handler_generic_soap_req_resp_dict,\
                     prism_tomcat_request_log_dict, prism_daemon_request_log_dict,\
                     prism_tomcat_callbackV2_log_dict, prism_daemon_callbackV2_log_dict,\
-                    prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict):
+                    prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict,\
+                    prism_smsd_tlog_dict):
         
         self.initializedPath_object = initializedPath_object
         self.validation_object = validation_object
@@ -47,6 +48,8 @@ class TlogParser:
         self.prism_tomcat_perf_log_dict = prism_tomcat_perf_log_dict
         self.prism_daemon_perf_log_dict = prism_daemon_perf_log_dict
         
+        self.prism_smsd_tlog_dict = prism_smsd_tlog_dict
+        
     def parse_tlog(self, pname):
         
         #tlog object
@@ -62,7 +65,8 @@ class TlogParser:
                             self.prism_daemon_handler_generic_soap_req_resp_dict,\
                             self.prism_tomcat_request_log_dict, self.prism_daemon_request_log_dict,\
                             self.prism_tomcat_callbackV2_log_dict, self.prism_daemon_callbackV2_log_dict,\
-                            self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict)
+                            self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict,\
+                            self.prism_smsd_tlog_dict)
         
         # tlog_object.get_tlog(pname)
         

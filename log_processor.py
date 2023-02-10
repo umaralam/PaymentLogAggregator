@@ -29,6 +29,7 @@ class PROCESSOR:
         self.prism_ctid = []
         self.prism_tomcat_tlog_dict = {}
         self.prism_daemon_tlog_dict = {}
+        self.prism_smsd_tlog_dict = {}
         self.prism_daemon_tlog_thread_dict = DefaultDict(list)
         self.prism_tomcat_tlog_thread_dict = defaultdict(list)
         self.prism_tomcat_handler_generic_http_req_resp_dict = {}
@@ -55,7 +56,8 @@ class PROCESSOR:
                                         self.prism_daemon_handler_generic_soap_req_resp_dict,\
                                         self.prism_tomcat_request_log_dict, self.prism_daemon_request_log_dict,\
                                         self.prism_tomcat_callbackV2_log_dict, self.prism_daemon_callbackV2_log_dict,\
-                                        self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict)
+                                        self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict,\
+                                        self.prism_smsd_tlog_dict)
         
         hostname = socket.gethostname()
         for pname in self.config[hostname]:

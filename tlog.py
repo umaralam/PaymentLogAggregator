@@ -1,3 +1,4 @@
+from email import header
 import logging
 import re
 import signal
@@ -17,7 +18,7 @@ class Tlog:
                     prism_daemon_handler_generic_http_req_resp_dict, prism_tomcat_handler_generic_soap_req_resp_dict,\
                     prism_daemon_handler_generic_soap_req_resp_dict, prism_tomcat_request_log_dict,\
                     prism_daemon_request_log_dict, prism_tomcat_callbackV2_log_dict, prism_daemon_callbackV2_log_dict,\
-                    prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict):
+                    prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict, prism_smsd_tlog_dict):
         
         self.initializedPath_object = initializedPath_object
         self.validation_object = validation_object
@@ -41,6 +42,7 @@ class Tlog:
         self.tlog_dict = defaultdict(list)
         self.ctid_data_dict = defaultdict(list)
         self.ctid_access_data_dict = defaultdict(list)
+        self.msisdn_sms_data_dict = defaultdict(list)
         
         #Is for both tlog and external tlog
         self.griff_ctid_msisdn_data_list = []
@@ -81,6 +83,8 @@ class Tlog:
         self.prism_daemon_callbackV2_log_dict = prism_daemon_callbackV2_log_dict
         self.prism_tomcat_perf_log_dict = prism_tomcat_perf_log_dict
         self.prism_daemon_perf_log_dict = prism_daemon_perf_log_dict
+        
+        self.prism_smsd_tlog_dict = prism_smsd_tlog_dict
     
     def get_tlog(self, pname):
         """
@@ -102,7 +106,7 @@ class Tlog:
             or pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP" or pname == "PRISM_TOMCAT_REQ_RESP"\
             or pname == "PRISM_TOMCAT_CALLBACK_V2_REQ_RESP" or pname == "PRISM_DAEMON_REQ_RESP"\
             or pname == "PRISM_DAEMON_CALLBACK_V2_REQ_RESP" or pname == "PRISM_TOMCAT_PERF_LOG"\
-            or pname == "PRISM_DAEMON_PERF_LOG":
+            or pname == "PRISM_DAEMON_PERF_LOG" or pname == "PRISM_SMSD":
             
             self.constructor_parameter_reinitialize()
         
@@ -133,8 +137,13 @@ class Tlog:
                     self.msisdn_ctid_map(pname, file, self.is_backup_file)
                     
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-                # function call 
+                # function call
                 self.ctid_based_tlog_fetch(pname, self.tlog_files, False)
+            
+            elif pname == "PRISM_SMSD":
+                # function call
+                self.msisdn_based_sms_tlog_fetch(pname, self.tlog_files)
+                
             
             elif pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP"\
                     or pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP"\
@@ -195,6 +204,8 @@ class Tlog:
                     
             elif pname == "PRISM_TOMCAT_PERF_LOG" or pname == "PRISM_DAEMON_PERF_LOG":
                 self.perf_data_mapping(pname, data_list)
+            elif pname == "PRISM_SMSD":
+                self.sms_data_header_mapping(pname, data_list)
             else:
                 self.tlog_record_header_mapping(pname, data_list)
         
@@ -292,6 +303,7 @@ class Tlog:
                 
         if pname == "GRIFF":
             ctid_msisdn_data = ctid_mdn_data.split('\n')
+            logging.info('griff ctid msisdn data: %s', ctid_msisdn_data)
             for row in ctid_msisdn_data:
                 if row != "":
                     self.griff_ctid_msisdn_data_list.append(row)
@@ -427,7 +439,7 @@ class Tlog:
                         "NEW_SRV_KEYWORD","INFER_SUB_STATUS","CHARGE_KEYWORD","TRIGGER_ID","PACK_KEY",\
                         "PARENT_ID","APP_NAME","SITE_NAME","REN_COUNT","FLOW_TASKS","CONTENT_ID","CAMPAIGN_ID",\
                         "TOTAL_CHG_AMNT","RECO","TASK_TYPE","TASK_STATUS","PAYMENT_STATUS","CHARGE_SCHEDULE",\
-                        "NEXT_BILL_DATE"
+                        "NEXT_BILL_DATE","CTID"
                     ]
         
         elif pname == "PRISM_SMSD":
@@ -479,11 +491,12 @@ class Tlog:
                             self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
             
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-                logging.info('prism data list: %s', data_list)
+                logging.info('prism data ctid: %s', temp_map)
+                logging.info('data list: %s', data_list)
                 for data in data_list:
                     splitted_data = str(data).split("|")
                     logging.info('splitted data: %s', splitted_data)
-                    
+                    # if ctid in data:
                     data_dict = {}
                     flow_tasks_element = []
                     index_count = 28
@@ -505,10 +518,16 @@ class Tlog:
                                 for i, td in enumerate(element.split("=")[1].split("]")[0].split(",")):
                                     index_count += 1
                                     data_dict[header[index_count]] = td.replace('"', '').replace("'", '"').strip()
+                                data_dict[header[len(header) - 1]] = f"{ctid}"
                             except IndexError as error:
                                 logging.exception(error)
-                    if ctid in data_dict["CAMPAIGN_ID"]:
+                        
+                        # logging.info('index_: %s', index)
+                        # elif index == len(splitted_data):
+                    
+                    if ctid in data_dict["CTID"]:
                         self.ctid_data_dict[ctid].append(data_dict)
+                        
                 logging.info('prism ctid data dict: %s', self.ctid_data_dict)
 
         if pname == "PRISM_TOMCAT":
@@ -594,18 +613,18 @@ class Tlog:
                 splitted_data = str(data).split("|")
                 # splitted_data = re.split(r'\|(?=[^|])(?:[^|]*\([^)]+\))*[^|]*', data)
                 # splitted_data = re.split(r'\|(?=(?:[^<]*<[^>]*>)*[^>]*$)', data)
-                
-                logging.info('splitted data: %s', splitted_data)
-                
-                data_dict = {}
-                
-                try:
-                    for index, element in enumerate(splitted_data):
-                        
-                            data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip().rstrip(":")
-                    self.ctid_data_dict[thread].append(data_dict)
-                except IndexError as error:
-                    logging.exception(error)
+                if thread == splitted_data[1].replace('"', '').strip():
+                    logging.info('splitted data: %s', splitted_data)
+                    
+                    data_dict = {}
+                    
+                    try:
+                        for index, element in enumerate(splitted_data):
+                            
+                                data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip().rstrip(":")
+                        self.ctid_data_dict[thread].append(data_dict)
+                    except IndexError as error:
+                        logging.exception(error)
             logging.info('prism gen req resp data dict: %s', self.ctid_data_dict)
     
         if pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP":
@@ -647,7 +666,39 @@ class Tlog:
             self.prism_daemon_callbackV2_log_dict = {"PRISM_DAEMON_CALLBACK_V2_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.prism_daemon_callbackV2_log_dict)
             logging.info('prism daemon generic soap req-resp: %s', str(self.prism_daemon_callbackV2_log_dict).replace("'", '"'))
+   
+   
+    def sms_data_header_mapping(self, pname, data_list):
+        #sms tlog header map
+        if pname == "PRISM_SMSD":
+            
+            header = [
+                        "TIMESTAMP","THREAD","SITE_ID","MSISDN","SRNO","SRVCODE","MSG","HANDLER","STATUS","REMARKS","TIME_TAKEN","SMS_INFO"
+                    ]
+     
+            for data in data_list:
+                splitted_data = str(data).split("|")
+                # splitted_data = re.split(r'\|(?=[^|])(?:[^|]*\([^)]+\))*[^|]*', data)
+                # splitted_data = re.split(r'\|(?=(?:[^<]*<[^>]*>)*[^>]*$)', data)
+                
+                logging.info('splitted data: %s', splitted_data)
+                
+                data_dict = {}
+                
+                try:
+                    for index, element in enumerate(splitted_data):
+                        
+                            data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip().rstrip(":")
+                    self.msisdn_sms_data_dict[f"{self.validation_object.fmsisdn}"].append(data_dict)
+                except IndexError as error:
+                    logging.exception(error)
+            logging.info('sms tlog data dict: %s', self.msisdn_sms_data_dict)
     
+        if pname == "PRISM_SMSD":
+            self.prism_smsd_tlog_dict = {"PRISM_SMSD_TLOG": dict(self.msisdn_sms_data_dict)}
+            self.payment_data_dict_list.append(self.prism_smsd_tlog_dict)
+            logging.info('prism sms tlog: %s', str(self.prism_smsd_tlog_dict).replace("'", '"'))
+        
     def ctid_based_accesslog_fetch(self, pname, files):
         #access log fetch based on ctid and msisdn in case of packs
         # if pname == "PACKS":
@@ -721,7 +772,8 @@ class Tlog:
         
         for thread in threads:
             for data in data_list:
-                self.ctid_data_dict[thread].append(data)
+                if thread in data:
+                    self.ctid_data_dict[thread].append(data)
                 
         if pname == "PRISM_TOMCAT_PERF_LOG":
             self.prism_tomcat_perf_log_dict = {"PRISM_TOMCAT_PERF_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
@@ -732,6 +784,14 @@ class Tlog:
             self.prism_daemon_perf_log_dict = {"PRISM_DAEMON_PERF_LOG": dict(self.ctid_data_dict)}
             self.payment_data_dict_list.append(self.prism_daemon_perf_log_dict)
             logging.info('prism daemon perf log: %s', self.prism_daemon_perf_log_dict)
+    
+    def msisdn_based_sms_tlog_fetch(self, pname, files):    
+        for file in files:
+            try:
+                data = subprocess.check_output(f"cat {file} | grep -a {self.validation_object.fmsisdn}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                self.tlog_record.append(data)
+            except Exception as ex:
+                logging.info(ex)
     
     def constructor_parameter_reinitialize(self):
         self.tlog_files = []

@@ -1,5 +1,7 @@
 from datetime import datetime
 import logging
+from pathlib import Path
+import re
 import xml.etree.ElementTree as ET
 import socket
 
@@ -14,6 +16,7 @@ class LogPathFinder():
         self.start_date = validation_object.start_date
         self.end_date = validation_object.end_date
         self.hostname = hostname
+        self.debugMsisdn = ""
         
         #griff tomcat dictionary object
         self.griff_tomcat_log_path_dict = {}
@@ -59,6 +62,8 @@ class LogPathFinder():
         self.is_packs_access_path = False
         self.is_routing_success = False
         self.is_prism_access_path = False
+        self.is_debug_msisdn = False
+        
         
     def parse_transaction_logging(self, process_name):
         """
@@ -121,8 +126,8 @@ class LogPathFinder():
                         
                         logging.info('\n')
                         
+                        self.is_msisdn_in_debugMsisdn_list(pname)
                         self.parse_logger(pname, log4j2_path)
-
                     else:
                         logging.info('Properties not defined in %s log4j2.xml,'\
                                         'We will try to fetch appender path without place holder.', pname)
@@ -194,8 +199,9 @@ class LogPathFinder():
                         
                         logging.info('\n')
                         
+                        self.is_msisdn_in_debugMsisdn_list(pname)
                         self.parse_logger(pname, log4j2_path)
-                
+            
                     else:
                         logging.info('Properties not defined in %s log4j2.xml,'\
                                         'We will try to fetch appender path without place holder.', pname)
@@ -519,6 +525,60 @@ class LogPathFinder():
         try:
             for route in data.findall('Route'):
                 if pname != 'PRISM':
+                    if self.is_debug_msisdn:
+                        for rollingFile in route.findall('RollingFile'):
+                            if (
+                                    str(rollingFile.attrib.get('fileName')).startswith('${log.basePath}')\
+                                    or str(rollingFile.attrib.get('fileName')).startswith('${log.path}')
+                                ):
+                                    
+                                if pname == "GRIFF":
+                                    replacedValue = str(rollingFile.attrib.get('fileName'))\
+                                                    .replace("${log.basePath}", self.griff_tomcat_log4j_property_dict['log.basePath'])\
+                                                    .replace("${ctx:debugmsisdn}", self.debugMsisdn)
+                                    
+                                    self.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"] = replacedValue
+                            
+                                elif pname == 'PACKS':
+                                    replacedValue = str(rollingFile.attrib.get('fileName'))\
+                                                    .replace("${log.path}", self.packs_tomcat_log4j_property_dict['log.path'])\
+                                                    .replace("${ctx:DEBUGMSISDN}", self.debugMsisdn)
+                                    
+                                    self.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"] = replacedValue
+                                
+                                if (
+                                        str(rollingFile.attrib.get('filePattern')).startswith('${log.backupBasePath}')\
+                                        or str(rollingFile.attrib.get('filePattern')).startswith('${log.rollover.basePath}')
+                                    ):
+                                    
+                                    if pname == 'GRIFF':
+                                        replacedValue = str(rollingFile.attrib.get('filePattern'))\
+                                                        .replace("${log.backupBasePath}", self.griff_tomcat_log4j_property_dict['log.backupBasePath'])\
+                                                        .replace("${ctx:debugmsisdn}", self.debugMsisdn)\
+                                                        .replace("${log.rollover.datePattern}", self.griff_tomcat_log4j_property_dict['log.rollover.datePattern'])\
+                                                        .replace("${log.rollover.extension}", self.griff_tomcat_log4j_property_dict['log.rollover.extension'])
+                                        
+                                        self.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_backup_log"] = replacedValue
+                                    
+                                    elif pname == 'PACKS':
+                                        replacedValue = str(rollingFile.attrib.get('filePattern'))\
+                                                        .replace("${log.rollover.basePath}", self.packs_tomcat_log4j_property_dict['log.rollover.basePath'])\
+                                                        .replace("${ctx:DEBUGMSISDN}", self.debugMsisdn)\
+                                                        .replace("${log.rollover.datePattern}", self.packs_tomcat_log4j_property_dict['log.rollover.datePattern'])\
+                                                        .replace("${log.rollover.extension}", self.packs_tomcat_log4j_property_dict['log.rollover.extension'])\
+                                        
+                                        self.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_backup_log"] = replacedValue
+                                else:
+                                    if pname == 'GRIFF':
+                                        self.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_backup_log"] = rollingFile.attrib.get('filePattern')   
+                                    elif pname == 'PACKS':
+                                        self.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_backup_log"] = rollingFile.attrib.get('filePattern')   
+                            else:
+                                if pname == 'GRIFF':
+                                    self.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"] = rollingFile.attrib.get('fileName')
+                                elif pname == 'PACKS':
+                                    self.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"] = rollingFile.attrib.get('fileName')
+                    
                     for appender in tree.findall('./Appenders/RollingRandomAccessFile'):
                         if route.attrib.get('ref') == appender.attrib.get('name'):
                             if (
@@ -577,6 +637,35 @@ class LogPathFinder():
                                 elif pname == 'PACKS':
                                     self.packs_tomcat_log_path_dict[f"packs_{route.attrib.get('ref')}_log"] = appender.attrib.get('fileName')
                 
+                    else:
+                        for appender in tree.findall('./Appenders/RollingFile'):
+                            if route.attrib.get('ref') == appender.attrib.get('name'):
+                                if (str(appender.attrib.get('fileName')).startswith('${log.path}')):
+                                    
+                                    if pname == 'PACKS':
+                                        replacedValue = str(appender.attrib.get('fileName'))\
+                                                        .replace("${log.path}", self.packs_tomcat_log4j_property_dict['log.path'])
+                                        
+                                        self.packs_tomcat_log_path_dict[f"packs_{route.attrib.get('ref')}_log"] = replacedValue
+                                        
+                                    if (str(appender.attrib.get('filePattern')).startswith('${log.rollover.basePath}')):
+                                    
+                                        if pname == 'PACKS':
+                                            replacedValue = str(appender.attrib.get('filePattern'))\
+                                                            .replace("${log.rollover.datePattern}", self.packs_tomcat_log4j_property_dict['log.rollover.datePattern'])\
+                                                            .replace("${log.rollover.extension}", self.packs_tomcat_log4j_property_dict['log.rollover.extension'])\
+                                                            .replace("${log.rollover.basePath}", self.packs_tomcat_log4j_property_dict['log.rollover.basePath'])\
+                                            
+                                            self.packs_tomcat_log_path_dict[f"packs_{route.attrib.get('ref')}_backup_log"] = replacedValue
+                                    
+                                    else:  
+                                        if pname == 'PACKS':
+                                            self.packs_tomcat_log_path_dict[f"packs_{route.attrib.get('ref')}_backup_log"] = appender.attrib.get('filePattern')   
+                                else:
+                                    if pname == 'PACKS':
+                                        self.packs_tomcat_log_path_dict[f"packs_{route.attrib.get('ref')}_log"] = appender.attrib.get('fileName')
+                        else:
+                            pass
                 else:
                     if route.attrib.get('key') == 'PROCESSOR_99':
                         for appender_routing in tree.findall('./Appenders/Routing/Routes/Route/File'):
@@ -598,6 +687,42 @@ class LogPathFinder():
         except ET.ParseError as ex:
             logging.debug(ex)
     
+    def is_msisdn_in_debugMsisdn_list(self, pname):
+        #check and fetch debug msisdn log path
+        self.reinitialize_is_debug_msisdn()
+        
+        if pname == "GRIFF":
+            if self.griff_tomcat_log_path_dict[self.griff_process_home_directory]:
+                property_directory = f"{self.griff_tomcat_log_path_dict[self.griff_process_home_directory]}/conf/griff/resources"
+                path = Path(f"{property_directory}/service.properties")
+                
+        elif pname == "PACKS":
+            if self.packs_tomcat_log_path_dict[self.packs_process_home_directory]:
+                property_directory = f"{self.packs_tomcat_log_path_dict[self.packs_process_home_directory]}/conf/packs"
+                path = Path(f"{property_directory}/packs.properties")
+        
+        with open(path) as property:
+            if pname == "GRIFF":
+                DEBUG_MSISDN_LIST = [data.split("=")[1].split("|") for data in property.readlines() if re.search("DEBUG_MSISDN_LIST",data, re.DOTALL)]
+            elif pname == "PACKS":
+                DEBUG_MSISDN_LIST = [data.split("=")[1].split(",") for data in property.readlines() if re.search("debug_msisdn_list",data, re.DOTALL)]
+            
+            logging.info('debug msisdn list= %s', DEBUG_MSISDN_LIST)
+            for mdn in DEBUG_MSISDN_LIST:
+                for msisdn in mdn:
+                    if self.validation_object.fmsisdn in msisdn:
+                        self.debugMsisdn = msisdn.strip()
+                        self.is_debug_msisdn = True
+                        logging.info('%s present in %s debug msisdn list :debug msisdn=%s', self.validation_object.fmsisdn, pname, self.debugMsisdn)
+                        
+                        # if pname == "GRIFF":
+                        #     self.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"] = f'{str(self.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).split(".")[0]}'+f'-{debugMsisdn}.log'
+                        # elif pname == "PACKS":
+                        #     self.griff_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"] = f'{str(self.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).split(".")[0]}'+f'-{debugMsisdn}.log'
+    
+    def reinitialize_is_debug_msisdn(self):
+        self.is_debug_msisdn = False
+        
     def initialize_path(self, section):
             """
             Initialize tomcat path.
