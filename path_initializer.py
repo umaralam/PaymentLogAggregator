@@ -198,6 +198,7 @@ class LogPathFinder():
                             logging.info('%s : %s', key, value)
                         
                         logging.info('\n')
+                        logging.info('\n')
                         
                         self.is_msisdn_in_debugMsisdn_list(pname)
                         self.parse_logger(pname, log4j2_path)
