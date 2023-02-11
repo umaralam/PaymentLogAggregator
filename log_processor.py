@@ -2,7 +2,7 @@ from collections import defaultdict
 import logging
 import socket
 from typing import DefaultDict
-from tlog_parser import TlogParser
+from tlog_processor import TlogProcessor
 from outfile_writer import FileWriter
 
 
@@ -44,7 +44,7 @@ class PROCESSOR:
         self.prism_daemon_perf_log_dict = {}
     
     def process(self):
-        tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object, self.config,\
+        tlogProcessor_object = TlogProcessor(self.initializedPath_object, self.validation_object, self.config,\
                                         self.payment_data_dict_list, self.payment_data_dict,\
                                         self.griff_tlog_dict, self.packs_tlog_dict,\
                                         self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
@@ -67,7 +67,7 @@ class PROCESSOR:
                 try:
                     if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"]:
                         logging.debug('%s tomcat tlog path exists', pname)
-                        if tlogParser_object.parse_tlog("GRIFF"):
+                        if tlogProcessor_object.process_tlog("GRIFF"):
                         # if tlogParser_object.parse_tomcat_tlog("GRIFF"):
                             pass
                 except KeyError as error:
@@ -77,7 +77,7 @@ class PROCESSOR:
                 try:
                     if self.initializedPath_object.packs_tomcat_log_path_dict["packs_PACKS_T_LOG_APPENDER.FILE_log"]:
                         logging.debug('%s tomcat tlog path exists', pname)
-                        if tlogParser_object.parse_tlog("PACKS"):
+                        if tlogProcessor_object.process_tlog("PACKS"):
                         # if tlogParser_object.parse_tomcat_tlog("PACKS"):
                             pass
                 except KeyError as error:
@@ -87,7 +87,7 @@ class PROCESSOR:
                 try:
                     if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]:
                         logging.debug('%s tomcat tlog path exists', pname)
-                        if tlogParser_object.parse_tlog("PRISM_TOMCAT"):
+                        if tlogProcessor_object.process_tlog("PRISM_TOMCAT"):
                             pass
                 except KeyError as error:
                     logging.exception(error)
@@ -95,7 +95,7 @@ class PROCESSOR:
                 try:
                     if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_tlog_path"]:
                         logging.debug('%s daemon tlog path exists', pname)
-                        if tlogParser_object.parse_tlog("PRISM_DEAMON"):
+                        if tlogProcessor_object.process_tlog("PRISM_DEAMON"):
                             pass
                 except KeyError as error:
                     logging.exception(error)
@@ -103,7 +103,7 @@ class PROCESSOR:
                 try:
                     if self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_tlog_path"]:
                         logging.debug('%s smsd tlog path exists', pname)
-                        if tlogParser_object.parse_tlog("PRISM_SMSD"):
+                        if tlogProcessor_object.process_tlog("PRISM_SMSD"):
                             pass
                 except KeyError as error:
                     logging.exception(error)

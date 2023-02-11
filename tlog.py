@@ -1,15 +1,17 @@
-from email import header
 import logging
 import re
 import signal
 import subprocess
 from log_files import LogFileFinder
 from collections import defaultdict
+from tlog_parser import TlogParser
 
 
 class Tlog:
     """
     tlog mapping class
+    for creating tlog data mapping based on ctid, 
+    access log data included
     """
     def __init__(self, initializedPath_object, validation_object, payment_data_dict_list, payment_data_dict,\
                     config, griff_tlog_dict, packs_tlog_dict, griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
@@ -386,8 +388,9 @@ class Tlog:
                 logging.info(ex)
           
     def tlog_record_header_mapping(self, pname, data_list):
+        #GRIFF tlog header mapping and call to tlog parser class
+        tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object)
         
-        #GRIFF tlog header mapping
         if pname == "GRIFF":
             header = [
                         "TIMESTAMP","CTID","HOST","X_FORWARDED_FOR","THREAD_NAME","TOTAL_TIME","GRIFF_TIME",\
@@ -449,14 +452,14 @@ class Tlog:
                     ]
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
-            temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
+            ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
             
         elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-            temp_map = self.prism_ctid    
+            ctid_map = self.prism_ctid    
         
         logging.info('process name: %s', pname)
         
-        for ctid in temp_map:
+        for ctid in ctid_map:
             if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
                 for data in data_list:
                     splitted_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
@@ -491,7 +494,7 @@ class Tlog:
                             self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
             
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-                logging.info('prism data ctid: %s', temp_map)
+                logging.info('prism data ctid: %s', ctid_map)
                 logging.info('data list: %s', data_list)
                 for data in data_list:
                     splitted_data = str(data).split("|")
@@ -527,9 +530,8 @@ class Tlog:
                     
                     if ctid in data_dict["CTID"]:
                         self.ctid_data_dict[ctid].append(data_dict)
-                        
-                logging.info('prism ctid data dict: %s', self.ctid_data_dict)
 
+        
         if pname == "PRISM_TOMCAT":
             for transaction in self.ctid_data_dict[ctid]:
                 self.prism_tomcat_tlog_thread_dict["PRISM_TOMCAT_THREAD"].append(transaction["THREAD"])
@@ -570,7 +572,10 @@ class Tlog:
             self.prism_daemon_tlog_dict = {"PRISM_BILLING_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.payment_data_dict_list.append(self.prism_daemon_tlog_dict)
             logging.info('prism billing tlogs: %s', str(self.prism_daemon_tlog_dict).replace("'", '"'))
-            
+        
+        #parse tlog for error
+        tlogParser_object.parse_tlog(pname, ctid_map, self.ctid_data_dict)
+        
     def prism_handler_req_resp_header_map(self, pname, data_list):
         # prism tomcat and daemon handler request response mapping
         
