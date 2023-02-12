@@ -87,7 +87,8 @@ class TlogProcessor:
                         self.griff_ext_hit_tlog_dict = tlog_object.get_tlog("GRIFF_EXTHIT")
                         # logging.info('griff ext tlog dict: %s', self.griff_ext_hit_tlog_dict)
                         
-                        for ctid in self.griff_ext_hit_tlog_dict["GRIFF_EXT_HIT_TLOG"][f"{self.validation_object.fmsisdn}"]:
+                        # for ctid in self.griff_ext_hit_tlog_dict["GRIFF_EXT_HIT_TLOG"][f"{self.validation_object.fmsisdn}"]:
+                        for ctid in self.griff_ext_hit_tlog_dict["GRIFF_EXT_HIT_TLOG"]:
                             self.prism_ctid.append(ctid)
                             logging.info('ctid present in prism ctid: %s', self.prism_ctid)
                     except TypeError as error:
@@ -113,7 +114,8 @@ class TlogProcessor:
                     # logging.info('packs ext tlog dict: %s', self.packs_ext_hit_tlog_dict)
                     
                     try:
-                        for ctid in self.packs_ext_hit_tlog_dict["PACKS_EXT_HIT_TLOG"][f"{self.validation_object.fmsisdn}"]:
+                        # for ctid in self.packs_ext_hit_tlog_dict["PACKS_EXT_HIT_TLOG"][f"{self.validation_object.fmsisdn}"]:
+                        for ctid in self.packs_ext_hit_tlog_dict["PACKS_EXT_HIT_TLOG"]:
                             if ctid in self.prism_ctid:
                                 logging.info('ctid present in prism ctid: %s', self.prism_ctid)
                             else:

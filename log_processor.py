@@ -18,7 +18,7 @@ class PROCESSOR:
         
         #for dumping data as json
         self.payment_data_dict_list = []
-        self.payment_data_dict = {"PAYMENT_TRANS_DATA": ""}
+        self.payment_data_dict = {"PAYMENT_TRANSACTION_DATA": {f"{validation_object.fmsisdn}" : ""}}
         
         #griff and packs tlog dictionary
         self.griff_tlog_dict = {}
@@ -110,7 +110,7 @@ class PROCESSOR:
             
         outfile_writer = FileWriter()
         if self.payment_data_dict_list:
-            self.payment_data_dict["PAYMENT_TRANS_DATA"] = self.payment_data_dict_list
+            self.payment_data_dict["PAYMENT_TRANSACTION_DATA"][f"{self.validation_object.fmsisdn}"] = self.payment_data_dict_list
             outfile_writer.write_json_tlog_data(self.payment_data_dict)
         
         # json_object = json.dumps(self.payment_tlog_dict)
