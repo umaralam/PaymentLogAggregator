@@ -5,7 +5,7 @@ class TlogProcessor:
     """
     Parse the tlog for various conditions
     """
-    def __init__(self, initializedPath_object, validation_object, config,\
+    def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode, config,\
                     payment_data_dict_list, payment_data_dict,\
                     griff_tlog_dict, packs_tlog_dict,\
                     griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
@@ -21,7 +21,9 @@ class TlogProcessor:
                     prism_smsd_tlog_dict):
         
         self.initializedPath_object = initializedPath_object
+        self.outputDirectory_object = outputDirectory_object
         self.validation_object = validation_object
+        self.log_mode = log_mode
         self.config = config
         self.payment_data_dict_list = payment_data_dict_list
         self.payment_data_dict = payment_data_dict
@@ -53,8 +55,8 @@ class TlogProcessor:
     def process_tlog(self, pname):
         
         #tlog object
-        tlog_object = Tlog(self.initializedPath_object, self.validation_object,\
-                            self.payment_data_dict_list, self.payment_data_dict, self.config,\
+        tlog_object = Tlog(self.initializedPath_object, self.outputDirectory_object, self.validation_object,\
+                            self.log_mode, self.payment_data_dict_list, self.payment_data_dict, self.config,\
                             self.griff_tlog_dict, self.packs_tlog_dict,\
                             self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                             self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\

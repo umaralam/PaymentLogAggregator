@@ -13,8 +13,9 @@ class Tlog:
     for creating tlog data mapping based on ctid, 
     access log data included
     """
-    def __init__(self, initializedPath_object, validation_object, payment_data_dict_list, payment_data_dict,\
-                    config, griff_tlog_dict, packs_tlog_dict, griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
+    def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode,\
+                    payment_data_dict_list, payment_data_dict, config, griff_tlog_dict,\
+                    packs_tlog_dict, griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict, prism_daemon_tlog_thread_dict,\
                     prism_tomcat_tlog_thread_dict, prism_tomcat_handler_generic_http_req_resp_dict,\
                     prism_daemon_handler_generic_http_req_resp_dict, prism_tomcat_handler_generic_soap_req_resp_dict,\
@@ -23,7 +24,9 @@ class Tlog:
                     prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict, prism_smsd_tlog_dict):
         
         self.initializedPath_object = initializedPath_object
+        self.outputDirectory_object = outputDirectory_object
         self.validation_object = validation_object
+        self.log_mode = log_mode
         self.tlog_files = []
         self.backup_tlog_files = []
         self.access_files = []
@@ -405,7 +408,8 @@ class Tlog:
           
     def tlog_record_header_mapping(self, pname, data_list):
         #GRIFF tlog header mapping and call to tlog parser class
-        tlogParser_object = TlogParser(self.initializedPath_object, self.validation_object)
+        tlogParser_object = TlogParser(self.initializedPath_object, self.outputDirectory_object,\
+                                        self.validation_object, self.log_mode)
         
         if pname == "GRIFF":
             header = [
@@ -595,7 +599,7 @@ class Tlog:
             self.payment_data_dict_list.append(self.prism_daemon_tlog_dict)
             logging.info('prism billing tlogs: %s', str(self.prism_daemon_tlog_dict).replace("'", '"'))
         
-        #parse tlog for error
+        # parse tlog for error
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
             ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
             tlogParser_object.parse_tlog(pname, ctid_map, self.ctid_data_dict)

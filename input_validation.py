@@ -45,3 +45,4 @@ class InputValidation:
             logging.error('start date: %s or/and end date: %s entered is of invalid format. The format should be "yyyymmdd".', self.start_date, self.end_date)
             self.is_input_valid = False
             raise
+        

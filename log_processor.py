@@ -8,11 +8,12 @@ from outfile_writer import FileWriter
 
 class PROCESSOR:
     def __init__(self, initializedPath_object, outputDirectory_object,\
-                    validation_object, oarm_uid, config):
+                    validation_object, log_mode, oarm_uid, config):
         
         self.initializedPath_object = initializedPath_object
         self.outputDirectory_object = outputDirectory_object
         self.validation_object = validation_object
+        self.log_mode = log_mode
         self.oarm_uid = oarm_uid
         self.config = config
         
@@ -44,7 +45,8 @@ class PROCESSOR:
         self.prism_daemon_perf_log_dict = {}
     
     def process(self):
-        tlogProcessor_object = TlogProcessor(self.initializedPath_object, self.validation_object, self.config,\
+        tlogProcessor_object = TlogProcessor(self.initializedPath_object, self.outputDirectory_object,\
+                                        self.validation_object, self.log_mode, self.config,\
                                         self.payment_data_dict_list, self.payment_data_dict,\
                                         self.griff_tlog_dict, self.packs_tlog_dict,\
                                         self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
@@ -107,11 +109,14 @@ class PROCESSOR:
                             pass
                 except KeyError as error:
                     logging.exception(error)
-            
-        outfile_writer = FileWriter()
+           
+        outfile_writer = FileWriter(self.outputDirectory_object)
         if self.payment_data_dict_list:
             self.payment_data_dict["PAYMENT_TRANSACTION_DATA"][f"{self.validation_object.fmsisdn}"] = self.payment_data_dict_list
-            outfile_writer.write_json_tlog_data(self.payment_data_dict)
+            
+            if self.log_mode == "data" or self.log_mode == "error" or self.log_mode:
+                outfile_writer.write_json_tlog_data(self.payment_data_dict)
+            
         
         # json_object = json.dumps(self.payment_tlog_dict)
         

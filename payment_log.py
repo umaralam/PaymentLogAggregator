@@ -4,10 +4,14 @@ import json
 import logging
 import os
 from pathlib import Path
+import shutil
 import socket
 import sys
+from zipfile import ZipFile
+import zipfile
 from path_initializer import LogPathFinder
 from input_validation import InputValidation
+from input_tags import logMode
 from log_processor import PROCESSOR
 
 
@@ -22,45 +26,52 @@ class Main:
         num_argv = len(sys.argv)
         logging.debug('Number of arguments passed is: %s', num_argv - 1)
         
-        if num_argv == 5:
-            logging.debug('Arguments passed are - msisdn:%s, start date:%s and end date: %s', sys.argv[1], sys.argv[2], sys.argv[3])
-            # if num_argv == 4:
-            #     logging.debug('Arguments passed are - msisdn:%s and automattion_log:%s', sys.argv[1], sys.argv[2])
-            # else:
-            #     logging.debug('Arguments passed are : msisdn=%s and search_date=%s', sys.argv[1], sys.argv[2])
-                
-        r_period = 1
+        #default log mode is data(to fetch only transaction data accross product)
+        log_mode = "data"
+        
+        if num_argv == 6:
+            for status in logMode:
+                if status.value == sys.argv[4].split("=")[1]:
+                    log_mode = status.value
+                    logging.debug('Arguments passed are :- msisdn:%s, start_date:%s, end_date:%s and log_mode:%s', sys.argv[1], sys.argv[2], sys.argv[3], log_mode)
+                    break
+            else:
+                logging.error('%s passed can eigther be "data/error/all", default value is "data"', sys.argv[4])
+            
+            
+        # r_period = 1
         hostname = socket.gethostname()
         data = Path(f"{hostname}.json").read_text()
         config = json.loads(data)
         
         if config:
-            logging.info('data rentention period is by default 1 day.')
-            bdt = datetime.today() - timedelta(days=r_period)
-            back_date = datetime.strftime(bdt, "%Y%m%d")
-            logging.info('back date: %s', back_date)
+            # logging.info('data rentention period is by default 1 day.')
+            # bdt = datetime.today() - timedelta(days=r_period)
+            # back_date = datetime.strftime(bdt, "%Y%m%d")
+            # logging.info('back date: %s', back_date)
                 
             outputDirectory_object = Path('out')
             try:
                 outputDirectory_object.mkdir(exist_ok=False)
             except FileExistsError as error:
-                logging.info('out directory already exists.')
-            
-            outputDirectory_object = Path('out/prism_auto_log')
-            try:
-                outputDirectory_object.mkdir(exist_ok=False)
-            except FileExistsError as error:
-                logging.info('out/automation directory already exists. Going to fetch %s dated files and remove.', back_date)
+                logging.info('out directory already exists. Hence removing the old out file and creating empty out file.')
+                shutil.rmtree(outputDirectory_object)
+                outputDirectory_object.mkdir()
+            # outputDirectory_object = Path('out')
+            # try:
+            #     outputDirectory_object.mkdir(exist_ok=False)
+            # except FileExistsError as error:
+            #     logging.info('out/automation directory already exists. Going to fetch %s dated files and remove.', back_date)
             
             logging.info('\n')
             logging.info('Log aggregation for automation started')
             logging.info("*******************************************")
             
-            self.remove_backdated_files(outputDirectory_object, back_date)
+            # self.remove_backdated_files(outputDirectory_object, back_date)
             validation_object = InputValidation(sys.argv[1], sys.argv[2], sys.argv[3])
             
             try:
-                if num_argv == 5:
+                if num_argv == 6:
                     validation_object.validate_msisdn()
                     validation_object.validate_date()
             except Exception as error:
@@ -173,10 +184,10 @@ class Main:
                         except Exception as error:
                             logging.warning(error)
                             
-                    uid = sys.argv[4]
+                    uid = sys.argv[5]
                     
-                    if num_argv == 5:
-                        processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, uid, config)
+                    if num_argv == 6:
+                        processor_object = PROCESSOR(initializedPath_object, outputDirectory_object, validation_object, log_mode, uid, config)
                         processor_object.process()
                     else:
                         logging.error('Invalid number of argument')
@@ -187,24 +198,43 @@ class Main:
                 except KeyError as error:
                     logging.exception(error)
             
-            
+        #move log_aggregator.log from current directory to respective directory.
+        log = outputDirectory_object/"log_aggregator.log"
+        if Path('log_aggregator.log').exists():
+            try:
+                if os.path.isfile(outputDirectory_object/"log_aggregator.log"):
+                    logging.info('log_aggregator.log file already exists. Hence removing and copying it.')
+                    os.remove(log)
+                shutil.move('log_aggregator.log', f'{outputDirectory_object}/')
+            except Exception as error:
+                logging.info(error)
+
+        logging.info('out directory: %s', outputDirectory_object)
+        
         end = datetime.now()
         logging.debug('end of execution time: %s', end)
             
         duration = end.timestamp() - start.timestamp()
         logging.debug('Total time taken %s', duration)
         
-    def remove_backdated_files(self, outputDirectory_object, back_date):
-        outfiles = [p for p in outputDirectory_object.glob(f"*_{back_date}__*.*")]
-        if bool(outfiles):
-            for file in outfiles:
-                if os.path.isfile(file):
-                    os.remove(file)
-                    logging.info('back dated files removed: %s', file)
-                else:
-                    logging.info('back dated file does not exists: %s', file)
-        else:
-            logging.info('back dated file does not exists')        
+        if num_argv == 6:
+            out_zipFile = f"{sys.argv[5]}_{hostname}_{Path('outfile.zip')}"
+            with ZipFile(out_zipFile, "a", compression=zipfile.ZIP_DEFLATED) as zip:
+                # for path in Path(outputDirectory_object).rglob(f"{sys.argv[4]}_*.*"):
+                zip.write(outputDirectory_object)
+            print(f"OARM_OUTPUT_FILENAME|{Path(out_zipFile).absolute()}")
+        
+    # def remove_backdated_files(self, outputDirectory_object, back_date):
+    #     outfiles = [p for p in outputDirectory_object.glob(f"*_{back_date}__*.*")]
+    #     if bool(outfiles):
+    #         for file in outfiles:
+    #             if os.path.isfile(file):
+    #                 os.remove(file)
+    #                 logging.info('back dated files removed: %s', file)
+    #             else:
+    #                 logging.info('back dated file does not exists: %s', file)
+    #     else:
+    #         logging.info('back dated file does not exists')        
         
 if __name__ == '__main__':
     main_object = Main()
