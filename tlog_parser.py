@@ -17,8 +17,9 @@ class TlogParser:
         try:
             for ctid in ctid_map:
                 for tlog_dict in ctid_tlog_header_data_dict[ctid]:
-                    if pname == "GRIFF":
+                    if pname == "GRIFF" and tlog_dict:
                         out = str(tlog_dict["OUT"]).split(",")
+                        msg = "CG is not available"
                         for status in out:
                             if status == "OUT=400" and tlog_dict["GRIFF_ACTION"] != "cgconsentinfo":
                                 logging.info('griff out: %s', out)

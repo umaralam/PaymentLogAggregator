@@ -43,6 +43,7 @@ class Tlog:
         #tlog header mapping parameters
         self.tlog_dict = defaultdict(list)
         self.ctid_data_dict = defaultdict(list)
+        self.msisdn_data_dict = {}
         self.ctid_access_data_dict = defaultdict(list)
         # self.msisdn_sms_data_dict = defaultdict(list)
         self.msisdn_sms_data_list = []
@@ -189,8 +190,8 @@ class Tlog:
                 if self.tlog_backup_files_with_ctid_msisdn:
                     self.ctid_based_tlog_fetch(pname, self.tlog_backup_files_with_ctid_msisdn, True)
         
+        logging.info('tlog record: %s', self.tlog_record)
         if self.tlog_record:
-            logging.info('tlog record: %s', self.tlog_record)
             data_list = []
             for data in self.tlog_record:
                 logging.info('data in tlog: %s', data)
@@ -341,23 +342,37 @@ class Tlog:
             if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
                 temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
                 
+                for ctid in temp_map:
+                    if is_backup_files:
+                        for file in files:
+                            try:
+                                data = subprocess.check_output(f"zcat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                                self.tlog_record.append(data)
+                            except Exception as ex:
+                                logging.info(ex)
+                    else:
+                        for file in files:
+                            try:
+                                data = subprocess.check_output(f"cat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                                self.tlog_record.append(data)
+                            except Exception as ex:
+                                logging.info(ex)
+                                
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
-                temp_map = self.prism_ctid
+                # temp_map = self.prism_ctid  //support not available for now
+                msisdn = self.validation_object.fmsisdn
 
-                # logging.info('temp map ee: %s', temp_map)
-                
-            for ctid in temp_map:
                 if is_backup_files:
                     for file in files:
                         try:
-                            data = subprocess.check_output(f"zcat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                            data = subprocess.check_output(f"zcat {file} | grep -a {msisdn}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                             self.tlog_record.append(data)
                         except Exception as ex:
                             logging.info(ex)
                 else:
                     for file in files:
                         try:
-                            data = subprocess.check_output(f"cat {file} | grep -a {ctid}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                            data = subprocess.check_output(f"cat {file} | grep -a {msisdn}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                             self.tlog_record.append(data)
                         except Exception as ex:
                             logging.info(ex)
@@ -443,7 +458,7 @@ class Tlog:
                         "NEW_SRV_KEYWORD","INFER_SUB_STATUS","CHARGE_KEYWORD","TRIGGER_ID","PACK_KEY",\
                         "PARENT_ID","APP_NAME","SITE_NAME","REN_COUNT","FLOW_TASKS","CONTENT_ID","CAMPAIGN_ID",\
                         "TOTAL_CHG_AMNT","RECO","TASK_TYPE","TASK_STATUS","PAYMENT_STATUS","CHARGE_SCHEDULE",\
-                        "NEXT_BILL_DATE","CTID"
+                        "NEXT_BILL_DATE"
                     ]
         
         elif pname == "PRISM_SMSD":
@@ -452,16 +467,12 @@ class Tlog:
                         "STATUS","REMARKS","TIME_TAKEN","SMS_INFO"
                     ]
         
-        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
-            ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
-            
-        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-            ctid_map = self.prism_ctid    
-        
         logging.info('process name: %s', pname)
         
-        for ctid in ctid_map:
-            if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+            ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
+             
+            for ctid in ctid_map:
                 for data in data_list:
                     splitted_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
                     
@@ -489,58 +500,62 @@ class Tlog:
                     
                     elif pname == "PACKS_EXTHIT":
                         if ctid == str(splitted_data[2]).replace('"', ''):
+                            logging.info('packs ext ctid: %s', ctid)
                             data_dict = {}
                             for index, element in enumerate(splitted_data):
                                 data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                             self.ctid_data_dict[str(ctid).replace('"', '')].append(data_dict)
+                            logging.info('keys: %s', self.ctid_data_dict.keys())
             
-            elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-                logging.info('prism data ctid: %s', ctid_map)
-                logging.info('data list: %s', data_list)
-                for data in data_list:
-                    splitted_data = str(data).split("|")
-                    logging.info('splitted data: %s', splitted_data)
-                    # if ctid in data:
-                    data_dict = {}
-                    flow_tasks_element = []
-                    index_count = 28
-                    # logging.info('splitted data length: %s', len(splitted_data))
-                    for index, element in enumerate(splitted_data):
-                        if index <= 27:
-                            data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip().rstrip(":")
-                        elif index <= len(splitted_data) - 6:
-                            flow_tasks_element.append(element.replace('"', '').replace("'", '"').strip())
-                            data_dict[header[index_count]] = flow_tasks_element
-                            
-                        elif index <= len(splitted_data) - 2:
-                            index_count += 1
-                            data_dict[header[index_count]] = element.replace('"', '').replace("'", '"').strip()
+        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
+            # ctid_map = self.validation_object.fmsisdn
+            # logging.info('prism data ctid: %s', ctid_map)
+            logging.info('data list prism: %s', data_list)
+            for data in data_list:
+                splitted_data = str(data).split("|")
+                logging.info('splitted data: %s', splitted_data)
+                # if ctid in data:
+                data_dict = {}
+                flow_tasks_element = []
+                index_count = 28
+                # logging.info('splitted data length: %s', len(splitted_data))
+                for index, element in enumerate(splitted_data):
+                    if index <= 27:
+                        data_dict[header[index]] = element.replace('"', '').replace("'", '"').strip().rstrip(":")
+                    elif index <= len(splitted_data) - 6:
+                        flow_tasks_element.append(element.replace('"', '').replace("'", '"').strip())
+                        data_dict[header[index_count]] = flow_tasks_element
                         
-                        elif index == len(splitted_data) - 1:
-                            # logging.info('index: %s', index)
-                            try:
-                                for i, td in enumerate(element.split("=")[1].split("]")[0].split(",")):
-                                    index_count += 1
-                                    data_dict[header[index_count]] = td.replace('"', '').replace("'", '"').strip()
-                                data_dict[header[len(header) - 1]] = f"{ctid}"
-                            except IndexError as error:
-                                logging.exception(error)
-                        
-                        # logging.info('index_: %s', index)
-                        # elif index == len(splitted_data):
+                    elif index <= len(splitted_data) - 2:
+                        index_count += 1
+                        data_dict[header[index_count]] = element.replace('"', '').replace("'", '"').strip()
                     
-                    if ctid in data_dict["CTID"]:
-                        self.ctid_data_dict[ctid].append(data_dict)
-
+                    elif index == len(splitted_data) - 1:
+                        # logging.info('index: %s', index)
+                        try:
+                            for i, td in enumerate(element.split("=")[1].split("]")[0].split(",")):
+                                index_count += 1
+                                data_dict[header[index_count]] = td.replace('"', '').replace("'", '"').strip()
+                            # data_dict[header[len(header) - 1]] = f"{ctid}"
+                        except IndexError as error:
+                            logging.exception(error)
+                    
+                    # logging.info('index_: %s', index)
+                    # elif index == len(splitted_data):
+                
+                # if ctid in data_dict["CTID"]: //support not available for now
+                self.msisdn_data_dict[data_dict["THREAD"]] = data_dict
+        
         
         if pname == "PRISM_TOMCAT":
-            for transaction in self.ctid_data_dict[ctid]:
-                self.prism_tomcat_tlog_thread_dict["PRISM_TOMCAT_THREAD"].append(transaction["THREAD"])
+            logging.info('msisdn data dict: %s', self.msisdn_data_dict)
+            for thread, data in self.msisdn_data_dict.items():
+                self.prism_tomcat_tlog_thread_dict["PRISM_TOMCAT_THREAD"].append(thread)
                 logging.info('prism tomcat thread: %s', self.prism_tomcat_tlog_thread_dict)
         
         elif pname == "PRISM_DEAMON":
-            for transaction in self.ctid_data_dict[ctid]:
-                self.prism_daemon_tlog_thread_dict["PRISM_DEAMON_THREAD"].append(transaction["THREAD"])
+            for thread, data in self.msisdn_data_dict.items():
+                self.prism_daemon_tlog_thread_dict["PRISM_DEAMON_THREAD"].append(thread)
                 logging.info('prism daemon thread: %s', self.prism_daemon_tlog_thread_dict)
                     
                         
@@ -564,23 +579,28 @@ class Tlog:
         
         elif pname == "PACKS_EXTHIT":
             # self.packs_ext_hit_tlog_dict = {"PACKS_EXT_HIT_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
+            logging.info('packs ctid data ext: %s', self.ctid_data_dict)
             self.packs_ext_hit_tlog_dict = {"PACKS_EXT_HIT_TLOG": dict(self.ctid_data_dict)}
             self.payment_data_dict_list.append(self.packs_ext_hit_tlog_dict)
             logging.info('packs ext tlogs: %s', str(self.packs_ext_hit_tlog_dict).replace("'", '"'))
         
         elif pname == "PRISM_TOMCAT":
             # self.prism_tomcat_tlog_dict = {"PRISM_REALTIME_BILLING_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
-            self.prism_tomcat_tlog_dict = {"PRISM_TOMCAT_BILLING_TLOG": dict(self.ctid_data_dict)}
+            self.prism_tomcat_tlog_dict = {"PRISM_TOMCAT_BILLING_TLOG": dict(self.msisdn_data_dict)}
             self.payment_data_dict_list.append(self.prism_tomcat_tlog_dict)
             logging.info('prism realtime billing tlogs: %s', str(self.prism_tomcat_tlog_dict).replace("'", '"'))
         
         elif pname == "PRISM_DEAMON":
-            self.prism_daemon_tlog_dict = {"PRISM_DAEMON_TLOG": dict(self.ctid_data_dict)}
+            self.prism_daemon_tlog_dict = {"PRISM_DAEMON_TLOG": dict(self.msisdn_data_dict)}
             self.payment_data_dict_list.append(self.prism_daemon_tlog_dict)
             logging.info('prism billing tlogs: %s', str(self.prism_daemon_tlog_dict).replace("'", '"'))
         
         #parse tlog for error
-        tlogParser_object.parse_tlog(pname, ctid_map, self.ctid_data_dict)
+        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+            ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
+            tlogParser_object.parse_tlog(pname, ctid_map, self.ctid_data_dict)
+        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
+            pass
         
     def prism_handler_req_resp_header_map(self, pname, data_list):
         # prism tomcat and daemon handler request response mapping
