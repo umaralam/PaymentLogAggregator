@@ -18,7 +18,7 @@ class TlogProcessor:
                     prism_tomcat_request_log_dict, prism_daemon_request_log_dict,\
                     prism_tomcat_callbackV2_log_dict, prism_daemon_callbackV2_log_dict,\
                     prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict,\
-                    prism_smsd_tlog_dict):
+                    prism_smsd_tlog_dict, oarm_uid):
         
         self.initializedPath_object = initializedPath_object
         self.outputDirectory_object = outputDirectory_object
@@ -51,6 +51,7 @@ class TlogProcessor:
         self.prism_daemon_perf_log_dict = prism_daemon_perf_log_dict
         
         self.prism_smsd_tlog_dict = prism_smsd_tlog_dict
+        self.oarm_uid = oarm_uid
         
     def process_tlog(self, pname):
         
@@ -68,7 +69,7 @@ class TlogProcessor:
                             self.prism_tomcat_request_log_dict, self.prism_daemon_request_log_dict,\
                             self.prism_tomcat_callbackV2_log_dict, self.prism_daemon_callbackV2_log_dict,\
                             self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict,\
-                            self.prism_smsd_tlog_dict)
+                            self.prism_smsd_tlog_dict, self.oarm_uid)
         
         # tlog_object.get_tlog(pname)
         

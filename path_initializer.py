@@ -290,6 +290,18 @@ class LogPathFinder():
         """
         logging.info('\n')
         logging.info('process name: %s and log4j path: %s', pname, log4j)
+        
+        # Define a namespace mapping with a blank prefix for the default namespace
+        # ns_map = {"": "http://logging.apache.org/log4j/2.0/config"}
+
+        # # Parse the XML file and ignore the 'xmlns' attribute
+        # if pname == "PACKS":
+        #     tree = ET.parse(log4j, parser=ET.XMLParser(target=ET.TreeBuilder(), namespaces=ns_map))
+        #     root = tree.getroot()
+        #     logging.info('printing root: %s', root)
+        # else:
+        #     tree = ET.parse(log4j)
+                
         if pname == 'GRIFF':
             try:
                 tree = ET.parse(log4j)
@@ -309,6 +321,7 @@ class LogPathFinder():
         elif pname == 'PACKS':
             try:
                 tree = ET.parse(log4j)
+                # for data in root.findall('./Properties/Property'):
                 for data in tree.findall('./Properties/Property'):
                     if (
                             data.attrib.get('name') == 'log.path'\
@@ -329,8 +342,16 @@ class LogPathFinder():
         """
         Logger reference call to appender
         """
+        # Define a namespace mapping with a blank prefix for the default namespace
+        # ns_map = {"": "http://logging.apache.org/log4j/2.0/config"}
+
+        # Parse the XML file and ignore the 'xmlns' attribute
         try:
+            # if pname == "PACKS":
+            #     tree = ET.parse(log4j2_path, parser=ET.XMLParser(target=ET.TreeBuilder(), namespaces=ns_map))
+            # else:
             tree = ET.parse(log4j2_path)
+                
             if pname == 'GRIFF':
                 for data in tree.findall('./Loggers/AsyncLogger'):
                     self.parse_appender(data, tree, pname)

@@ -59,7 +59,7 @@ class PROCESSOR:
                                         self.prism_tomcat_request_log_dict, self.prism_daemon_request_log_dict,\
                                         self.prism_tomcat_callbackV2_log_dict, self.prism_daemon_callbackV2_log_dict,\
                                         self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict,\
-                                        self.prism_smsd_tlog_dict)
+                                        self.prism_smsd_tlog_dict, self.oarm_uid)
         
         hostname = socket.gethostname()
         for pname in self.config[hostname]:
@@ -110,12 +110,12 @@ class PROCESSOR:
                 except KeyError as error:
                     logging.exception(error)
            
-        outfile_writer = FileWriter(self.outputDirectory_object)
+        fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
         if self.payment_data_dict_list:
             self.payment_data_dict["PAYMENT_TRANSACTION_DATA"][f"{self.validation_object.fmsisdn}"] = self.payment_data_dict_list
             
-            if self.log_mode == "data" or self.log_mode == "error" or self.log_mode:
-                outfile_writer.write_json_tlog_data(self.payment_data_dict)
+            if self.log_mode == "txn" or self.log_mode == "error" or self.log_mode == "all":
+                fileWriter_object.write_json_tlog_data(self.payment_data_dict)
             
         
         # json_object = json.dumps(self.payment_tlog_dict)

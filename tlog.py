@@ -21,7 +21,7 @@ class Tlog:
                     prism_daemon_handler_generic_http_req_resp_dict, prism_tomcat_handler_generic_soap_req_resp_dict,\
                     prism_daemon_handler_generic_soap_req_resp_dict, prism_tomcat_request_log_dict,\
                     prism_daemon_request_log_dict, prism_tomcat_callbackV2_log_dict, prism_daemon_callbackV2_log_dict,\
-                    prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict, prism_smsd_tlog_dict):
+                    prism_tomcat_perf_log_dict, prism_daemon_perf_log_dict, prism_smsd_tlog_dict, oarm_uid):
         
         self.initializedPath_object = initializedPath_object
         self.outputDirectory_object = outputDirectory_object
@@ -92,6 +92,7 @@ class Tlog:
         self.prism_daemon_perf_log_dict = prism_daemon_perf_log_dict
         
         self.prism_smsd_tlog_dict = prism_smsd_tlog_dict
+        self.oarm_uid = oarm_uid
     
     def get_tlog(self, pname):
         """
@@ -409,7 +410,7 @@ class Tlog:
     def tlog_record_header_mapping(self, pname, data_list):
         #GRIFF tlog header mapping and call to tlog parser class
         tlogParser_object = TlogParser(self.initializedPath_object, self.outputDirectory_object,\
-                                        self.validation_object, self.log_mode)
+                                        self.validation_object, self.log_mode, self.oarm_uid)
         
         if pname == "GRIFF":
             header = [

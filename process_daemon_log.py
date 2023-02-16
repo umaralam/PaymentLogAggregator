@@ -8,14 +8,15 @@ class DaemonLogProcessor:
         Daemon log processor class
         fetching daemon log for the issue threads in the tlogs
     """
-    def __init__(self, initializedPath_object, outputDirectory_object, validation_object):
+    def __init__(self, initializedPath_object, outputDirectory_object, validation_object, oarm_uid):
         self.initializedPath_object = initializedPath_object
         self.outputDirectory_object = outputDirectory_object
         self.validation_object = validation_object
+        self.oarm_uid = oarm_uid
         
     def process_daemon_log(self, pname, tlog_thread):
         #creating out file writter object for writting log to out file
-        fileWriter_object = FileWriter(self.outputDirectory_object)
+        fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
         
         if pname == "GRIFF":
             try:
