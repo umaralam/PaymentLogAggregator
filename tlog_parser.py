@@ -15,20 +15,8 @@ class TlogParser:
         self.validation_object = validation_object
         self.log_mode = log_mode
         self.oarm_uid = oarm_uid
-        self.hostname = socket.gethostname()
     
     def parse_tlog(self, pname, ctid_map, ctid_tlog_header_data_dict):
-        if pname == "GRIFF":
-            griff_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_griff")
-            
-            try:
-                # outputDirectory_object.mkdir(exist_ok=False)
-                griff_folder.mkdir(parents=True, exist_ok=False)
-            except FileExistsError as error:
-                logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
-                shutil.rmtree(griff_folder)
-                griff_folder.mkdir(parents=True)
-                
         #Daemon log processor object
         daemonLogProcessor_object = DaemonLogProcessor(self.initializedPath_object, self.outputDirectory_object,\
                                                         self.validation_object, self.oarm_uid)
@@ -44,12 +32,15 @@ class TlogParser:
     
                             logging.info('status value: %s', out[2].strip())
                             if out[0] != "OUT=200" and msg not in out[2].strip():        
-                                #fetch griff daemon log
+                                #fetch daemon log
                                 logging.info('issue thread: %s', tlog_dict["THREAD_NAME"])
-                                daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"])
+                                daemonLogProcessor_object.process_daemon_log(pname, ctid, tlog_dict["THREAD_NAME"])
+                    
+                    elif pname == "PACKS":
+                        pass
                                         
                     elif self.log_mode == "all":
-                        daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"])
+                        daemonLogProcessor_object.process_daemon_log(pname, ctid, tlog_dict["THREAD_NAME"])
                     
         except KeyError as error:
             logging.exception(error)

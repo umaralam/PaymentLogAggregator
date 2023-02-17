@@ -291,49 +291,46 @@ class LogPathFinder():
         logging.info('\n')
         logging.info('process name: %s and log4j path: %s', pname, log4j)
         
-        # Define a namespace mapping with a blank prefix for the default namespace
-        # ns_map = {"": "http://logging.apache.org/log4j/2.0/config"}
-
-        # # Parse the XML file and ignore the 'xmlns' attribute
-        # if pname == "PACKS":
-        #     tree = ET.parse(log4j, parser=ET.XMLParser(target=ET.TreeBuilder(), namespaces=ns_map))
-        #     root = tree.getroot()
-        #     logging.info('printing root: %s', root)
-        # else:
-        #     tree = ET.parse(log4j)
+        tree = ET.parse(log4j)
                 
         if pname == 'GRIFF':
             try:
-                tree = ET.parse(log4j)
-                for data in tree.findall('./Properties/Property'):
+                for prop in tree.findall('./Properties/Property'):
                     if (
-                            data.attrib.get('name') == 'log.basePath'\
-                            or data.attrib.get('name') == 'log.backupBasePath'\
-                            or data.attrib.get('name') == 'log.rollover.datePattern'\
-                            or data.attrib.get('name') == 'log.rollover.extension'
+                            prop.attrib.get('name') == 'log.basePath'\
+                            or prop.attrib.get('name') == 'log.backupBasePath'\
+                            or prop.attrib.get('name') == 'log.rollover.datePattern'\
+                            or prop.attrib.get('name') == 'log.rollover.extension'
                         ):
                         
-                        self.griff_tomcat_log4j_property_dict[data.attrib.get('name')] = data.text
+                        self.griff_tomcat_log4j_property_dict[prop.attrib.get('name')] = prop.text
                 
             except ET.ParseError as ex:
                 logging.debug(ex)
                 
         elif pname == 'PACKS':
             try:
-                tree = ET.parse(log4j)
-                # for data in root.findall('./Properties/Property'):
-                for data in tree.findall('./Properties/Property'):
+                # root = tree.getroot()
+                # root.tag = self.remove_namespace_prefix(root.tag)
+                # for child in root:
+                #     child.tag = self.remove_namespace_prefix(child.tag)
+
+                #     if child.tag == "Properties":
+                #         for prop in child:
+                #             prop.tag = self.remove_namespace_prefix(prop.tag)
+                #             logging.info('property tag: %s', prop)
+                for prop in tree.findall('./Properties/Property'):
                     if (
-                            data.attrib.get('name') == 'log.path'\
-                            or data.attrib.get('name') == 'log.output'\
-                            or data.attrib.get('name') == 'sys.log.backupBasePath'\
-                            or data.attrib.get('name') == 'log.backupPath'\
-                            or data.attrib.get('name') == 'log.rollover.basePath'\
-                            or data.attrib.get('name') == 'log.rollover.datePattern'\
-                            or data.attrib.get('name') == 'log.rollover.extension'
+                            prop.attrib.get('name') == 'log.path'\
+                            or prop.attrib.get('name') == 'log.output'\
+                            or prop.attrib.get('name') == 'sys.log.backupBasePath'\
+                            or prop.attrib.get('name') == 'log.backupPath'\
+                            or prop.attrib.get('name') == 'log.rollover.basePath'\
+                            or prop.attrib.get('name') == 'log.rollover.datePattern'\
+                            or prop.attrib.get('name') == 'log.rollover.extension'
                         ):
                         
-                        self.packs_tomcat_log4j_property_dict[data.attrib.get('name')] = data.text
+                        self.packs_tomcat_log4j_property_dict[prop.attrib.get('name')] = prop.text
                         
             except ET.ParseError as ex:
                 logging.debug(ex)
@@ -342,14 +339,7 @@ class LogPathFinder():
         """
         Logger reference call to appender
         """
-        # Define a namespace mapping with a blank prefix for the default namespace
-        # ns_map = {"": "http://logging.apache.org/log4j/2.0/config"}
-
-        # Parse the XML file and ignore the 'xmlns' attribute
         try:
-            # if pname == "PACKS":
-            #     tree = ET.parse(log4j2_path, parser=ET.XMLParser(target=ET.TreeBuilder(), namespaces=ns_map))
-            # else:
             tree = ET.parse(log4j2_path)
                 
             if pname == 'GRIFF':
@@ -357,6 +347,13 @@ class LogPathFinder():
                     self.parse_appender(data, tree, pname)
             
             elif pname == 'PACKS':
+                # root = tree.getroot()
+                # root.tag = self.remove_namespace_prefix(root.tag)
+                # for child in root:
+                #     child.tag = self.remove_namespace_prefix(child.tag)
+                #     if child.tag == "Loggers":
+                #         for logger in child:
+                #             logger.tag = self.remove_namespace_prefix(logger.tag)
                 for data in tree.findall('./Loggers/Logger'):
                     self.parse_appender(data, tree, pname)
             
@@ -385,7 +382,7 @@ class LogPathFinder():
                 
                 elif pname == 'PRISM' and sub_process != None:
                     logger_ref = str(logger.attrib.get('ref'))
-                    
+                   
                 for routing in tree.findall('./Appenders/Routing'):
                     if logger_ref == str(routing.attrib.get('name')):
                         for routes in tree.findall('./Appenders/Routing/Routes'):
@@ -740,6 +737,11 @@ class LogPathFinder():
                         #     self.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"] = f'{str(self.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).split(".")[0]}'+f'-{debugMsisdn}.log'
                         # elif pname == "PACKS":
                         #     self.griff_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"] = f'{str(self.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).split(".")[0]}'+f'-{debugMsisdn}.log'
+    
+    
+    def remove_namespace_prefix(self, tag):
+        # Define a function to remove the namespace prefix from element tags
+        return tag.split('}')[-1]
     
     def reinitialize_is_debug_msisdn(self):
         self.is_debug_msisdn = False

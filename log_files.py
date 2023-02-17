@@ -127,8 +127,6 @@ class LogFileFinder:
             self.tlog_files.append(f'{self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_tlog_path"]}/TLOG_SMS_*.tmp')
             self.tlog_dir = self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_tlog_path"]
         
-        
-        #process file for if pname == "GRIFF" or pname == "PACKS"
         if pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON"\
                 or pname == "PRISM_SMSD" or pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP"\
                 or pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP" or pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP"\

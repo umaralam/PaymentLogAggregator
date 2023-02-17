@@ -1,5 +1,7 @@
 from collections import defaultdict
 import logging
+from pathlib import Path
+import shutil
 import socket
 from typing import DefaultDict
 from tlog_processor import TlogProcessor
@@ -16,6 +18,7 @@ class PROCESSOR:
         self.log_mode = log_mode
         self.oarm_uid = oarm_uid
         self.config = config
+        self.hostname = socket.gethostname()
         
         #for dumping data as json
         self.payment_data_dict_list = []
@@ -66,6 +69,16 @@ class PROCESSOR:
             
             if pname == 'GRIFF':
                 # tlogParser_object.parse_tlog("GRIFF")
+                griff_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_griff")
+
+                try:
+                    # outputDirectory_object.mkdir(exist_ok=False)
+                    griff_folder.mkdir(parents=True, exist_ok=False)
+                except FileExistsError as error:
+                    logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
+                    shutil.rmtree(griff_folder)
+                    griff_folder.mkdir(parents=True)
+                
                 try:
                     if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"]:
                         logging.debug('%s tomcat tlog path exists', pname)
@@ -109,7 +122,7 @@ class PROCESSOR:
                             pass
                 except KeyError as error:
                     logging.exception(error)
-           
+            
         fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
         if self.payment_data_dict_list:
             self.payment_data_dict["PAYMENT_TRANSACTION_DATA"][f"{self.validation_object.fmsisdn}"] = self.payment_data_dict_list
