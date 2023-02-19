@@ -29,7 +29,7 @@ class DaemonLogProcessor:
         self.s_date = datetime.strptime(datetime.strftime(self.start_date, "%Y%m%d"), "%Y%m%d")
         self.e_date = datetime.strptime(datetime.strftime(self.end_date, "%Y%m%d"), "%Y%m%d")
         
-    def process_daemon_log(self, pname, tlog_thread, ctid, task_type):
+    def process_daemon_log(self, pname, tlog_thread, ctid, task_type, sub_type, input_tag):
         #creating out file writter object for writting log to out file
         fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
     
@@ -48,9 +48,9 @@ class DaemonLogProcessor:
                 
             if record:
                 if pname == "GRIFF" or pname == "PACKS":
-                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid, None)
+                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid, None, None, None)
                 elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, None, task_type)
+                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, None, task_type, sub_type, input_tag)
             else:
                 if pname == "GRIFF" or pname == "PACKS":
                     logging.info('%s msisdn debug log does not exists, hence checking msisdn backup debug log', pname)
@@ -71,7 +71,7 @@ class DaemonLogProcessor:
                     record = self.fetch_daemon_log(tlog_thread, self.backup_log_files)
                     
                     if record:
-                        fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid)
+                        fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid, None, None, None)
                     else:
                         logging.info('%s msisdn debug log could not be found for the %s', pname, tlog_thread)
         
@@ -118,7 +118,7 @@ class DaemonLogProcessor:
             record = self.fetch_daemon_log(tlog_thread, self.log_files)
             
             if record:
-                fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid)
+                fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid, None, None, None)
             else:
                 logging.info('Eigther debug log files does not exists in the current log path\
                              or thread could not be found. Going to check backup path.')
@@ -163,7 +163,7 @@ class DaemonLogProcessor:
                 record = self.fetch_daemon_log(tlog_thread, self.backup_log_files)
                 
                 if record:
-                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid)
+                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, record, ctid, None, None, None)
                 else:
                     logging.info('%s debug log could not be found for the %s', pname, tlog_thread)
                 

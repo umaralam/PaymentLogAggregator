@@ -608,9 +608,9 @@ class Tlog:
                 tlogParser_object.parse_tlog(pname, self.ctid_data_dict, ctid_map)
             
         # parse tlog for error
-        # elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-        #     if self.msisdn_data_dict:
-        #         tlogParser_object.parse_tlog(pname, self.msisdn_data_dict)
+        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
+            if self.msisdn_data_dict:
+                tlogParser_object.parse_tlog(pname, self.msisdn_data_dict)
         
     def prism_handler_req_resp_header_map(self, pname, data_list):
         # prism tomcat and daemon handler request response mapping
