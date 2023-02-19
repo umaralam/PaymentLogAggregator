@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 import shutil
 import socket
-from typing import DefaultDict
 from tlog_processor import TlogProcessor
 from outfile_writer import FileWriter
 
@@ -34,7 +33,7 @@ class PROCESSOR:
         self.prism_tomcat_tlog_dict = {}
         self.prism_daemon_tlog_dict = {}
         self.prism_smsd_tlog_dict = {}
-        self.prism_daemon_tlog_thread_dict = DefaultDict(list)
+        self.prism_daemon_tlog_thread_dict = defaultdict(list)
         self.prism_tomcat_tlog_thread_dict = defaultdict(list)
         self.prism_tomcat_handler_generic_http_req_resp_dict = {}
         self.prism_daemon_handler_generic_http_req_resp_dict = {}

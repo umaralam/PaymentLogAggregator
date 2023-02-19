@@ -387,7 +387,7 @@ class LogPathFinder():
                     if logger_ref == str(routing.attrib.get('name')):
                         for routes in tree.findall('./Appenders/Routing/Routes'):
                             #call to routing for re-routing the references
-                            self.parse_routing_appender(routes, tree, pname, sub_process)
+                            self.parse_routing_appender(routes, tree, pname, logger_ref, routing, sub_process)
                             
                         if self.is_routing_success:
                             break  
@@ -536,7 +536,7 @@ class LogPathFinder():
         except ET.ParseError as ex:
             logging.debug(ex)
         
-    def parse_routing_appender(self, data, tree, pname, sub_process=None):
+    def parse_routing_appender(self, data, tree, pname, logger_ref, routing, sub_process=None):
         """
         Re-route for logger reference and parse appender
         """
@@ -685,22 +685,37 @@ class LogPathFinder():
                         else:
                             pass
                 else:
-                    if route.attrib.get('key') == 'PROCESSOR_99':
-                        for appender_routing in tree.findall('./Appenders/Routing/Routes/Route/File'):
-                            # logging.info('99 log: %s', appender_routing.attrib.get('fileName'))
-                            replacedValue = str(appender_routing.attrib.get('fileName'))\
+                    self.reinitialize_is_debug_msisdn()
+                    
+                    if route.attrib.get('key') == f'TEST_{self.validation_object.fmsisdn}' and logger_ref == str(routing.attrib.get('name')):
+                        for file in route.findall('File'):
+                            replacedValue = str(file.attrib.get('fileName'))\
+                                                .replace("${ctx:SUB_ID}", f"{route.attrib.get('key')}")
+                                                        
+                        if sub_process == "PRISM_TOMCAT":
+                            self.prism_tomcat_log_path_dict[f"prism_tomcat_{route.attrib.get('key')}_log"] = replacedValue
+                            break
+                        
+                        elif sub_process == "PRISM_DEAMON":
+                            self.prism_daemon_log_path_dict[f"prism_daemon_{route.attrib.get('key')}_log"] = replacedValue
+                            break
+                        self.debugMsisdn = True
+                    
+                    elif route.attrib.get('key') == 'PROCESSOR_99' and logger_ref == str(routing.attrib.get('name')):
+                        for file in route.findall('File'):
+                            replacedValue = str(file.attrib.get('fileName'))\
                                                 .replace("${ctx:QUEUE_ID}", f"{route.attrib.get('key')}")
-                                                            
-                            if sub_process == "PRISM_TOMCAT":
-                                self.prism_tomcat_log_path_dict[f"prism_tomcat_{route.attrib.get('key')}_log"] = replacedValue
-                            
-                            elif sub_process == "PRISM_DEAMON":
-                                self.prism_daemon_log_path_dict[f"prism_daemon_{route.attrib.get('key')}_log"] = replacedValue
-                            
-                            elif sub_process == "PRISM_SMSD":
-                                self.prism_smsd_log_path_dict[f"prism_smsd_{route.attrib.get('key')}_log"] = replacedValue
-                               
-                self.is_routing_success = True
+                                                        
+                        if sub_process == "PRISM_TOMCAT":
+                            self.prism_tomcat_log_path_dict[f"prism_tomcat_{route.attrib.get('key')}_log"] = replacedValue
+                            break
+                        elif sub_process == "PRISM_DEAMON":
+                            self.prism_daemon_log_path_dict[f"prism_daemon_{route.attrib.get('key')}_log"] = replacedValue
+                            break
+                        elif sub_process == "PRISM_SMSD":
+                            self.prism_smsd_log_path_dict[f"prism_smsd_{route.attrib.get('key')}_log"] = replacedValue
+                            break
+                    self.is_routing_success = True
                     
         except ET.ParseError as ex:
             logging.debug(ex)

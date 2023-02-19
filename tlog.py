@@ -410,7 +410,8 @@ class Tlog:
     def tlog_record_header_mapping(self, pname, data_list):
         #GRIFF tlog header mapping and call to tlog parser class
         tlogParser_object = TlogParser(self.initializedPath_object, self.outputDirectory_object,\
-                                        self.validation_object, self.log_mode, self.oarm_uid)
+                                        self.validation_object, self.log_mode, self.oarm_uid,\
+                                        self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict)
         
         if pname == "GRIFF":
             header = [
@@ -601,11 +602,15 @@ class Tlog:
             logging.info('prism billing tlogs: %s', str(self.prism_daemon_tlog_dict).replace("'", '"'))
         
         # parse tlog for error
-        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
-            ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
-            tlogParser_object.parse_tlog(pname, ctid_map, self.ctid_data_dict)
-        elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-            pass
+        if pname == "GRIFF" or pname == "PACKS":
+            if self.ctid_data_dict:
+                ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
+                tlogParser_object.parse_tlog(pname, self.ctid_data_dict, ctid_map)
+            
+        # parse tlog for error
+        # elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
+        #     if self.msisdn_data_dict:
+        #         tlogParser_object.parse_tlog(pname, self.msisdn_data_dict)
         
     def prism_handler_req_resp_header_map(self, pname, data_list):
         # prism tomcat and daemon handler request response mapping
