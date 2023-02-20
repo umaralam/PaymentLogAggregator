@@ -7,7 +7,7 @@ import shutil
 import socket
 from zipfile import ZipFile
 import zipfile
-from input_tags import Griff_St_SString, Griff_En_SString, Prism_St_SString
+from input_tags import Griff_St_SString, Griff_En_SString, Prism_St_SString, Prism_En_SString
 # import subprocess
 
 class FileWriter:
@@ -27,19 +27,19 @@ class FileWriter:
     def write_complete_thread_log(self, pname, tlog_thread, record, ctid, task_type, sub_type, input_tag):
         #write complete thread log
         if pname == "GRIFF":
-            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_griff")                
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")                
             thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_griff.log"
         
         elif pname == "PACKS":
-            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_packs")                
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")                
             thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_packs.log"
         
         elif pname == "PRISM_TOMCAT":
-            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_prism_tomcat")                
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat")                
             thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_prism_tomcat.log"
         
         elif pname == "PRISM_DEAMON":
-            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_prism_daemon")                
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")                
             thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_prism_daemon.log"
             
         try:
@@ -71,40 +71,42 @@ class FileWriter:
             if pname == "GRIFF" or pname == "PACKS":
                 #set initial index based on start of search string
                 if pname == "GRIFF":
-                    for start_of_serach_string in Griff_St_SString:
+                    for gf_start_serach_string in Griff_St_SString:
                         with open(thread_outfile, "r") as outFile:
                             for i, line in enumerate(outFile):
-                                if re.search(start_of_serach_string.value, line, re.DOTALL):
+                                if re.search(gf_start_serach_string.value, line, re.DOTALL):
                                     self.set_initial_index(i)
                                     break
                 
                 #set final index based on end of search string
                 if pname == "GRIFF":
-                    for end_of_serach_string in Griff_En_SString:
+                    for gf_end_serach_string in Griff_En_SString:
                         with open(thread_outfile, "r") as outFile:
                             for i, line in enumerate(outFile):
-                                if re.search(r"{}".format(str(end_of_serach_string.value)), line):
+                                if re.search(r"{}".format(str(gf_end_serach_string.value)), line):
                                     self.set_final_index(i)
                                     break
             
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                 #set initial index based on start of search string
-                for start_of_serach_string in Prism_St_SString:
-                    logging.info('st search: %s', str(start_of_serach_string.value).format(task_type, sub_type))
-                    start_of_serach_string = str(start_of_serach_string.value).format(task_type, sub_type)
+                for sm_start_serach_string in Prism_St_SString:
+                    logging.info('st search: %s', str(sm_start_serach_string.value).format(task_type, sub_type))
+                    sm_start_serach_string = str(sm_start_serach_string.value).format(task_type, sub_type)
                     with open(thread_outfile, "r") as outFile:
                         for i, line in enumerate(outFile):
-                            if re.search(start_of_serach_string, line, re.DOTALL):
+                            if re.search(sm_start_serach_string, line, re.DOTALL):
                                 self.set_initial_index(i)
                                 break
                 
                 #set final index based on end of search string
-                with open(thread_outfile, "r") as outFile:
-                    for i, line in enumerate(outFile):
-                        final_search_string = f"-Tlog record added:{input_tag}"
-                        if re.search(r"{}".format(str(final_search_string)), line):
-                            self.set_final_index(i)
-                            break
+                for sm_end_serach_string in Prism_En_SString:
+                    logging.info('en search: %s', str(sm_end_serach_string.value).format(input_tag))
+                    sm_end_serach_string = str(sm_end_serach_string.value).format(input_tag)
+                    with open(thread_outfile, "r") as outFile:
+                        for i, line in enumerate(outFile):
+                            if re.search(sm_end_serach_string, line, re.DOTALL):
+                                self.set_final_index(i)
+                                break
                 
 
         except FileNotFoundError as error:

@@ -23,6 +23,15 @@ class TlogParser:
         self.prism_daemon_tlog_thread_dict = prism_daemon_tlog_thread_dict
         self.prism_tomcat_tlog_thread_dict = prism_tomcat_tlog_thread_dict
         
+        self.hostname = socket.gethostname()
+        
+        #out folder parameters
+        self.griff_out_folder = False
+        self.packs_out_folder = False
+        self.prism_tomcat_out_folder = False
+        self.prism_daemon_out_folder = False
+        self.prism_smsd_out_folder = False
+        
         #prism required parameters
         self.task_type = ""
         self.stck_sub_type = ""
@@ -34,12 +43,27 @@ class TlogParser:
         """
         self.reinitialize_constructor_parameters()
         
+        #call to remove previously executed process folders
+        if pname == "GRIFF":
+            folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
+            self.remove_old_process_folder(pname, folder)
+        elif pname == "PACKS":
+            pass
+        elif pname == "PRISM_TOMCAT":
+            folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat")
+            self.remove_old_process_folder(pname, folder)
+        elif pname == "PRISM_DEAMON":
+            folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")
+            self.remove_old_process_folder(pname, folder)
+        elif pname == "PRISM_SMSD":
+            pass
+        
         #Daemon log processor object
         daemonLogProcessor_object = DaemonLogProcessor(self.initializedPath_object, self.outputDirectory_object,\
                                                         self.validation_object, self.oarm_uid)
         #processing tlog based on different key in the tlog        
         try:
-            if ctid_map != None:
+            if (pname == "GRIFF" or pname == "PACKS") and ctid_map != None:
                 for ctid in ctid_map:
                     for tlog_dict in tlog_header_data_dict[ctid]:
                         if self.log_mode == "error":
@@ -49,7 +73,12 @@ class TlogParser:
                                 msg = "CG is not available"
         
                                 logging.info('status value: %s', out[2].strip())
-                                if out[0] != "OUT=200" and msg not in out[2].strip():        
+                                if out[0] != "OUT=200" and msg not in out[2].strip():
+                                    
+                                    #issue thread found so create griff folder for the 1st time
+                                    if not self.griff_out_folder:
+                                        self.create_process_folder(pname, folder)      
+                                    
                                     #fetch daemon log
                                     logging.info('issue thread: %s', tlog_dict["THREAD_NAME"])
                                     daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"], ctid, None, None, None)
@@ -58,8 +87,13 @@ class TlogParser:
                                 pass
                                             
                         elif self.log_mode == "all":
+                            #issue thread found so create griff folder for the 1st time
+                            if not self.griff_out_folder:
+                                self.create_process_folder(pname, folder)
+                                 
                             daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"], ctid, None, None, None)
-            else:
+            
+            elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                 if pname == "PRISM_TOMCAT":
                     thread_list = self.prism_tomcat_tlog_thread_dict["PRISM_TOMCAT_THREAD"]
                 elif pname == "PRISM_DEAMON":
@@ -69,7 +103,8 @@ class TlogParser:
                     # for tlog_dict in tlog_header_data_dict[thread]:
                     if self.log_mode == "error":
                         if self.check_for_issue_in_prism_tlog(
-                                                                tlog_header_data_dict[thread],PrismTasks, PrismTlogErrorTag,
+                                                                pname, folder, tlog_header_data_dict[thread],
+                                                                PrismTasks, PrismTlogErrorTag,
                                                                 PrismTlogLowBalTag, PrismTlogRetryTag,
                                                                 PrismTlogNHFTag, PrismTlogHandlerExp,
                                                                 PrismTlogAwaitPushTag, PrismTlogAwaitPushTimeOutTag
@@ -88,14 +123,21 @@ class TlogParser:
         except KeyError as error:
             logging.exception(error)
     
-    def check_for_issue_in_prism_tlog(self, tlog_dict, prism_tasks, *args):
+    def check_for_issue_in_prism_tlog(self, pname, folder, tlog_dict, prism_tasks, *args):
         #issue validation against input_tags
-        
         for prism_input_tags in args:
             for status in prism_input_tags:
-                # logging.info('status input: %s', tlog_dict["FLOW_TASKS"])
                 for task in tlog_dict["FLOW_TASKS"]:
                     if status.value in task:
+                        #issue thread found hence going to create prism process folder for the 1st time
+                        if pname == "PRISM_TOMCAT":
+                            if not self.prism_tomcat_out_folder:
+                                self.create_process_folder(pname, folder)
+                        elif pname == "PRISM_DEAMON":
+                            if not self.prism_daemon_out_folder:
+                                self.create_process_folder(pname, folder)
+                        
+                        #substitution parameters
                         self.input_tag = status.value
                         for ptask in prism_tasks:
                             if ptask.name == status.name:
@@ -106,6 +148,37 @@ class TlogParser:
                                 return True
         return False
     
+    def create_process_folder(self, pname, folder):
+        """
+            creating process folder
+        """
+        try:
+            folder.mkdir(parents=True, exist_ok=False)
+            self.set_process_out_folder(pname, True)
+        except FileExistsError as error:
+            folder.mkdir(parents=True)
+            self.set_process_out_folder(pname, True)
+    
+    def remove_old_process_folder(self, pname, folder):
+        #removing process folder if already exists
+        try:
+            logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
+            shutil.rmtree(folder)
+        except FileNotFoundError as error:
+            logging.info('%s out folder does not exists: %s', pname, error)
+    
+    def set_process_out_folder(self, pname, is_true):
+        if pname == "GRIFF":
+            self.griff_out_folder = is_true
+        elif pname == "PACKS":
+            self.packs_out_folder = is_true
+        elif pname == "PRISM_TOMCAT":
+            self.prism_tomcat_out_folder = is_true
+        elif pname == "PRISM_DEAMON":
+            self.prism_daemon_out_folder = is_true
+        elif pname == "PRISM_SMSD":
+            self.prism_smsd_out_folder = is_true
+            
     def reinitialize_constructor_parameters(self):
         self.task_type = ""
             

@@ -17,7 +17,6 @@ class PROCESSOR:
         self.log_mode = log_mode
         self.oarm_uid = oarm_uid
         self.config = config
-        self.hostname = socket.gethostname()
         
         #for dumping data as json
         self.payment_data_dict_list = []
@@ -67,13 +66,9 @@ class PROCESSOR:
         for pname in self.config[hostname]:
             if pname == 'GRIFF':
                 try:
-                    if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"]:
-                        folder = Path(f"{self.outputDirectory_object}/{self.hostname}_griff")
-                        self.create_process_folder(folder)
-                        
+                    if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"]:                
                         logging.debug('%s tomcat tlog path exists', pname)
                         if tlogProcessor_object.process_tlog("GRIFF"):
-                        # if tlogParser_object.parse_tomcat_tlog("GRIFF"):
                             pass
                 except KeyError as error:
                     logging.exception(error)
@@ -81,12 +76,8 @@ class PROCESSOR:
             elif pname == 'PACKS':
                 try:
                     if self.initializedPath_object.packs_tomcat_log_path_dict["packs_PACKS_T_LOG_APPENDER.FILE_log"]:
-                        folder = Path(f"{self.outputDirectory_object}/{self.hostname}_packs")
-                        self.create_process_folder(folder)
-                        
                         logging.debug('%s tomcat tlog path exists', pname)
                         if tlogProcessor_object.process_tlog("PACKS"):
-                        # if tlogParser_object.parse_tomcat_tlog("PACKS"):
                             pass
                 except KeyError as error:
                     logging.exception(error)
@@ -94,9 +85,6 @@ class PROCESSOR:
             elif pname == 'PRISM':
                 try:
                     if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]:
-                        folder = Path(f"{self.outputDirectory_object}/{self.hostname}_prism_tomcat")
-                        self.create_process_folder(folder)
-                        
                         logging.debug('%s tomcat tlog path exists', pname)
                         if tlogProcessor_object.process_tlog("PRISM_TOMCAT"):
                             pass
@@ -105,9 +93,6 @@ class PROCESSOR:
                 
                 try:
                     if self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_tlog_path"]:
-                        folder = Path(f"{self.outputDirectory_object}/{self.hostname}_prism_daemon")
-                        self.create_process_folder(folder)
-                        
                         logging.debug('%s daemon tlog path exists', pname)
                         if tlogProcessor_object.process_tlog("PRISM_DEAMON"):
                             pass
@@ -122,25 +107,11 @@ class PROCESSOR:
                 except KeyError as error:
                     logging.exception(error)
             
+        
         fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
+        
         if self.payment_data_dict_list:
             self.payment_data_dict["PAYMENT_TRANSACTION_DATA"][f"{self.validation_object.fmsisdn}"] = self.payment_data_dict_list
             
             if self.log_mode == "txn" or self.log_mode == "error" or self.log_mode == "all":
                 fileWriter_object.write_json_tlog_data(self.payment_data_dict)
-            
-        
-        # json_object = json.dumps(self.payment_tlog_dict)
-        
-        # logging.info('tlogs: %s', str(self.griff_tlog_dict["PACKS"]).replace("'", '"'))
-        # logging.info('json tlog data: %s',json.dumps(self.payment_tlog_dict))
-    def create_process_folder(self, folder):
-        """
-            creating process folder
-        """
-        try:
-            folder.mkdir(parents=True, exist_ok=False)
-        except FileExistsError as error:
-            logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
-            shutil.rmtree(folder)
-            folder.mkdir(parents=True)

@@ -24,6 +24,10 @@ class Prism_St_SString(Enum):
     #griff search string to get initial index
     search_string = "-process handler params for task {} for subType:{}"
 
+class Prism_En_SString(Enum):
+    #griff search string to get initial index
+    search_string = "-Tlog record added:{}"
+
 class PrismTlogErrorTag(Enum):
     """
     Enum error tag
