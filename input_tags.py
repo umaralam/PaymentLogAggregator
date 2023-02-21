@@ -17,8 +17,12 @@ class Griff_En_SString(Enum):
 
 #packs tags
 class Packs_St_SString(Enum):
-    search_string_1 = "Processor Called"
+    search_string_1 = "Entering activateSubscriber"
     
+class Packs_En_SString(Enum):
+    search_string_1 = "prism Charging status:ERROR"
+    search_string_2 = "subscriber activation status:"
+
 #prism tags
 class Prism_St_SString(Enum):
     #griff search string to get initial index

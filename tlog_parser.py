@@ -48,7 +48,8 @@ class TlogParser:
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
             self.remove_old_process_folder(pname, folder)
         elif pname == "PACKS":
-            pass
+            folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")
+            self.remove_old_process_folder(pname, folder)
         elif pname == "PRISM_TOMCAT":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat")
             self.remove_old_process_folder(pname, folder)
@@ -56,7 +57,8 @@ class TlogParser:
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")
             self.remove_old_process_folder(pname, folder)
         elif pname == "PRISM_SMSD":
-            pass
+            folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_smsd")
+            self.remove_old_process_folder(pname, folder)
         
         #Daemon log processor object
         daemonLogProcessor_object = DaemonLogProcessor(self.initializedPath_object, self.outputDirectory_object,\
@@ -84,8 +86,20 @@ class TlogParser:
                                     daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"], ctid, None, None, None)
                         
                             elif pname == "PACKS" and tlog_dict:
-                                pass
-                                            
+                                if (tlog_dict["BILLING_RES_STATUS"] == "ERROR" 
+                                        or (tlog_dict["BILLING_RES_STATUS"] == "" and tlog_dict["RET_STATUS"] == "FAILURE")
+                                        or (tlog_dict["RET_STATUS"] == "SUCCESS" and tlog_dict["RET_ERROR_REASON"] != "")
+                                    ):
+                                    #issue thread found so create griff folder for the 1st time
+                                    if not self.packs_out_folder:
+                                        self.create_process_folder(pname, folder)      
+                                    
+                                    #fetch daemon log
+                                    logging.info('issue thread: %s', tlog_dict["THREAD_NAME"])
+                                    daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"], ctid, None, None, None)
+                                
+                                      
+                                
                         elif self.log_mode == "all":
                             #issue thread found so create griff folder for the 1st time
                             if not self.griff_out_folder:
@@ -98,7 +112,7 @@ class TlogParser:
                     thread_list = self.prism_tomcat_tlog_thread_dict["PRISM_TOMCAT_THREAD"]
                 elif pname == "PRISM_DEAMON":
                     thread_list = self.prism_daemon_tlog_thread_dict["PRISM_DEAMON_THREAD"]
-                for thread in thread_list:    
+                for thread in thread_list:
                     logging.info('thread in tlog header: %s', tlog_header_data_dict[thread])
                     # for tlog_dict in tlog_header_data_dict[thread]:
                     if self.log_mode == "error":
@@ -119,7 +133,18 @@ class TlogParser:
                             daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD"], None, self.task_type, self.stck_sub_type, self.input_tag)
                         else:
                             daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD"], None, self.task_type, tlog_dict["SUB_TYPE"], self.input_tag)
-                                
+            
+            elif pname == "PRISM_SMSD":
+                if self.log_mode == "error":
+                    for sms_tlog in tlog_header_data_dict["PRISM_SMSD_TLOG"]:
+                        logging.info('sms tlog list: %s', sms_tlog)
+                        for status in PrismTlogSmsTag:
+                            if status.value == sms_tlog["STATUS"]:
+                                if not self.prism_smsd_out_folder:
+                                    self.create_process_folder(pname, folder)
+                                daemonLogProcessor_object.process_daemon_log(pname, sms_tlog["THREAD"], None, None, None, None)
+                            
+                     
         except KeyError as error:
             logging.exception(error)
     
@@ -156,6 +181,7 @@ class TlogParser:
             folder.mkdir(parents=True, exist_ok=False)
             self.set_process_out_folder(pname, True)
         except FileExistsError as error:
+            logging.info(error)
             folder.mkdir(parents=True)
             self.set_process_out_folder(pname, True)
     

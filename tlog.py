@@ -719,6 +719,9 @@ class Tlog:
    
     def sms_data_header_mapping(self, pname, data_list):
         #sms tlog header map
+        tlogParser_object = TlogParser(self.initializedPath_object, self.outputDirectory_object,\
+                                        self.validation_object, self.log_mode, self.oarm_uid,\
+                                        self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict)
         if pname == "PRISM_SMSD":
             
             header = [
@@ -749,6 +752,10 @@ class Tlog:
             self.prism_smsd_tlog_dict = {"PRISM_SMSD_TLOG": self.msisdn_sms_data_list}
             self.payment_data_dict_list.append(self.prism_smsd_tlog_dict)
             logging.info('prism sms tlog: %s', str(self.prism_smsd_tlog_dict).replace("'", '"'))
+        
+        # parse tlog for error
+        if self.prism_smsd_tlog_dict:
+            tlogParser_object.parse_tlog(pname, self.prism_smsd_tlog_dict)
         
     def ctid_based_accesslog_fetch(self, pname, files):
         #access log fetch based on ctid and msisdn in case of packs

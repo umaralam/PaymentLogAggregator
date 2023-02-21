@@ -7,7 +7,7 @@ import shutil
 import socket
 from zipfile import ZipFile
 import zipfile
-from input_tags import Griff_St_SString, Griff_En_SString, Prism_St_SString, Prism_En_SString
+from input_tags import Griff_St_SString, Griff_En_SString, Packs_St_SString, Packs_En_SString, Prism_St_SString, Prism_En_SString
 # import subprocess
 
 class FileWriter:
@@ -41,6 +41,10 @@ class FileWriter:
         elif pname == "PRISM_DEAMON":
             process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")                
             thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_prism_daemon.log"
+        
+        elif pname == "PRISM_SMSD":
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_smsd")                
+            thread_outfile = f"{process_folder}/{tlog_thread}_prism_smsd.log"
             
         try:
             with open(thread_outfile, "w") as write_file:
@@ -77,6 +81,13 @@ class FileWriter:
                                 if re.search(gf_start_serach_string.value, line, re.DOTALL):
                                     self.set_initial_index(i)
                                     break
+                elif pname == "PACKS":
+                    for pk_start_serach_string in Packs_St_SString:
+                        with open(thread_outfile, "r") as outFile:
+                            for i, line in enumerate(outFile):
+                                if re.search(pk_start_serach_string.value, line, re.DOTALL):
+                                    self.set_initial_index(i)
+                                    break
                 
                 #set final index based on end of search string
                 if pname == "GRIFF":
@@ -84,6 +95,13 @@ class FileWriter:
                         with open(thread_outfile, "r") as outFile:
                             for i, line in enumerate(outFile):
                                 if re.search(r"{}".format(str(gf_end_serach_string.value)), line):
+                                    self.set_final_index(i)
+                                    break
+                elif pname == "PACKS":
+                    for pk_end_serach_string in Packs_En_SString:
+                        with open(thread_outfile, "r") as outFile:
+                            for i, line in enumerate(outFile):
+                                if re.search(r"{}".format(str(pk_end_serach_string.value)), line):
                                     self.set_final_index(i)
                                     break
             
