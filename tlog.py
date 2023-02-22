@@ -48,6 +48,7 @@ class Tlog:
         self.ctid_data_dict = defaultdict(list)
         self.msisdn_data_dict = {}
         self.ctid_access_data_dict = defaultdict(list)
+        self.msisdn_access_data_dict = defaultdict(list)
         # self.msisdn_sms_data_dict = defaultdict(list)
         self.msisdn_sms_data_list = []
         
@@ -93,6 +94,7 @@ class Tlog:
         
         self.prism_smsd_tlog_dict = prism_smsd_tlog_dict
         self.oarm_uid = oarm_uid
+        self.is_success_access_hit = True
     
     def get_tlog(self, pname):
         """
@@ -172,19 +174,26 @@ class Tlog:
             if self.initializedPath_object.griff_tomcat_log_path_dict["griff_tomcat_access_path"]:
                 logging.debug('griff tomcat access path exists.')
                 self.access_files = logfile_object.get_tomcat_access_files(pname)
-        
+            
+            if self.access_files:
+                self.ctid_based_accesslog_fetch(pname, self.access_files)
+            
         elif pname == "PACKS":
             if self.initializedPath_object.packs_tomcat_log_path_dict["packs_tomcat_access_path"]:
                 logging.debug('packs tomcat access path exists.')
                 self.access_files = logfile_object.get_tomcat_access_files(pname)
-        
+            
+            if self.access_files:
+                self.ctid_based_accesslog_fetch(pname, self.access_files)
+                
         elif pname == "PRISM_TOMCAT":
             if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_access_path"]:
                 logging.debug('prism tomcat access path exists.')
                 self.access_files = logfile_object.get_tomcat_access_files(pname)
+            
+            if self.access_files:
+                self.msisdn_based_accesslog_fetch(pname, self.access_files)
         
-        if self.access_files:
-            self.ctid_based_accesslog_fetch(pname, self.access_files)
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
             if self.ctid_msisdn_map_dict and (self.tlog_files_with_ctid_msisdn\
@@ -758,24 +767,12 @@ class Tlog:
             tlogParser_object.parse_tlog(pname, self.prism_smsd_tlog_dict)
         
     def ctid_based_accesslog_fetch(self, pname, files):
-        #access log fetch based on ctid and msisdn in case of packs
-        # if pname == "PACKS":
-        #     for file in files:
-        #         try:
-        #             data = subprocess.check_output(f"cat {file} | grep -a {self.validation_object.fmsisdn}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
-        #             self.access_record.append(data)
-                    
-        #             if self.access_record:
-        #                 # logging.info('packs access record: %s', self.access_record)
-        #                 self.ctid_access_data_dict[f"{self.validation_object.fmsisdn}"].append(self.access_record)
-        #         except Exception as ex:
-        #             logging.info(ex)
-        
+        #access data for griff and packs        
         if pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT":
             if pname == "GRIFF" or pname == "PACKS":
                 ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
-            elif pname == "PRISM_TOMCAT":
-                ctid_map = self.prism_ctid
+            # elif pname == "PRISM_TOMCAT":
+            #     ctid_map = self.prism_ctid
             logging.info('access ctid list: %s', ctid_map)
             for ctid in ctid_map:
                 self.constructor_access_paramter_reinitialize()
@@ -801,7 +798,34 @@ class Tlog:
         if self.ctid_access_data_dict:
             self.access_data_mapping(pname)
             
-    
+    def msisdn_based_accesslog_fetch(self, pname, files):
+        #keeping prism out of ctid flow
+        if pname == "PRISM_TOMCAT":
+            mdn = self.validation_object.fmsisdn
+
+        self.constructor_access_paramter_reinitialize()
+        for file in files:
+            try:
+                data = subprocess.check_output(f"cat {file} | grep -a {mdn}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                self.access_record.append(data)
+                
+                if self.access_record:
+                    logging.info('%s access record: %s', pname, self.access_record)
+                    data_list = []
+                    for data in self.access_record:
+                        logging.info('data in access log: %s', data)
+                        for record in str(data).splitlines():
+                            if record:
+                                logging.info('access rec: %s', record)
+                                data_list.append(record)
+                self.msisdn_access_data_dict[f"{mdn}"].append(data_list)
+            except Exception as ex:
+                logging.info(ex)
+                        
+        
+        if self.msisdn_access_data_dict:
+            self.access_data_mapping(pname)
+
     def access_data_mapping(self, pname):
         
         logging.info('ctid based access data dict: %s', self.ctid_access_data_dict)
@@ -819,9 +843,16 @@ class Tlog:
         
         elif pname == "PRISM_TOMCAT":
             # self.prism_access_log_dict = {"PRISM_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
-            self.prism_access_log_dict = {"PRISM_ACCESS_LOG": dict(self.ctid_access_data_dict)}
+            self.prism_access_log_dict = {"PRISM_ACCESS_LOG": dict(self.msisdn_access_data_dict)}
             self.payment_data_dict_list.append(self.prism_access_log_dict)
             logging.info('prism access logs: %s', self.prism_access_log_dict)
+        
+        # if pname == "PRISM_TOMCAT":
+        #     tlogParser_object = TlogParser(self.initializedPath_object, self.outputDirectory_object,\
+        #                                 self.validation_object, self.log_mode, self.oarm_uid,\
+        #                                 self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict)
+        #     if self.msisdn_access_data_dict:
+        #         tlogParser_object.parse_accessLog("PRISM_TOMCAT_ACCESS", self.msisdn_access_data_dict)
             
     def perf_data_mapping(self, pname, data_list):
         #perf log mapping
@@ -853,7 +884,8 @@ class Tlog:
                 self.tlog_record.append(data)
             except Exception as ex:
                 logging.info(ex)
-    
+
+                            
     def constructor_parameter_reinitialize(self):
         self.tlog_files = []
         self.backup_tlog_files = []
