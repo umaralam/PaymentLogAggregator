@@ -2,6 +2,7 @@
 from datetime import datetime
 import json
 import logging
+import os
 from pathlib import Path
 import socket
 import sys
@@ -27,6 +28,10 @@ class Main:
         validation_object.validate_argument()
         
         fileWriter_object = FileWriter(outputDirectory_object, uid)
+        
+        if os.path.exists('modified_log4j2.xml'):
+            logging.info('removing old modified_log4j2.xml')
+            os.remove('modified_log4j2.xml')
         
         if validation_object.is_input_valid:
             data = Path(f"{hostname}.json").read_text()

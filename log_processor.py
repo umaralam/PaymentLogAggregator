@@ -45,6 +45,7 @@ class PROCESSOR:
         self.prism_tomcat_perf_log_dict = {}
         self.prism_daemon_perf_log_dict = {}
         self.stop_prism_process = False
+        self.hostname = socket.gethostname()
     
     def process(self):
         tlogProcessor_object = TlogProcessor(self.initializedPath_object, self.outputDirectory_object,\
@@ -63,9 +64,12 @@ class PROCESSOR:
                                         self.prism_tomcat_perf_log_dict, self.prism_daemon_perf_log_dict,\
                                         self.prism_smsd_tlog_dict, self.oarm_uid)
         
-        hostname = socket.gethostname()
-        for pname in self.config[hostname]:
+        
+        for pname in self.config[self.hostname]:
             if pname == 'GRIFF':
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
+                self.remove_old_process_folder(pname, folder)
+                
                 try:
                     if self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"]:                
                         logging.debug('%s tomcat tlog path exists', pname)
@@ -75,6 +79,9 @@ class PROCESSOR:
                     logging.exception(error)
                 
             elif pname == 'PACKS':
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")
+                self.remove_old_process_folder(pname, folder)
+                
                 try:
                     if self.initializedPath_object.packs_tomcat_log_path_dict["packs_PACKS_T_LOG_APPENDER.FILE_log"]:
                         logging.debug('%s tomcat tlog path exists', pname)
@@ -84,6 +91,15 @@ class PROCESSOR:
                     logging.exception(error)
                 
             elif pname == 'PRISM':
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat")
+                self.remove_old_process_folder(pname, folder)
+                
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")
+                self.remove_old_process_folder(pname, folder)
+                
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_smsd")
+                self.remove_old_process_folder(pname, folder)
+                
                 try:
                     if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_tlog_path"]:
                         logging.debug('%s tomcat tlog path exists', pname)
@@ -116,3 +132,11 @@ class PROCESSOR:
             
             if self.log_mode == "txn" or self.log_mode == "error" or self.log_mode == "all":
                 fileWriter_object.write_json_tlog_data(self.payment_data_dict)
+                
+    def remove_old_process_folder(self, pname, folder):
+            #removing process folder if already exists
+            try:
+                logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
+                shutil.rmtree(folder)
+            except FileNotFoundError as error:
+                logging.info('%s out folder does not exists: %s', pname, error)
