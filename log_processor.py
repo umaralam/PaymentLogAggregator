@@ -44,6 +44,7 @@ class PROCESSOR:
         self.prism_daemon_callbackV2_log_dict = {}
         self.prism_tomcat_perf_log_dict = {}
         self.prism_daemon_perf_log_dict = {}
+        self.stop_prism_process = False
     
     def process(self):
         tlogProcessor_object = TlogProcessor(self.initializedPath_object, self.outputDirectory_object,\

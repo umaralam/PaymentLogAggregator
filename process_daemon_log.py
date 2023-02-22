@@ -232,6 +232,21 @@ class DaemonLogProcessor:
                         fileWriter_object.write_complete_thread_log(pname, tlog_thread, self.issue_record, None, task_type, sub_type, input_tag)
             except KeyError as error:
                 logging.info(error)
+                
+        # elif pname == "PRISM_TOMCAT_ACCESS":
+        #     #prism/tomcat log processing
+        #     try:
+        #         if not self.issue_record:
+        #             self.reinitialize_constructor_parameter()
+                
+        #             self.log_files.append(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_PRISM_log"])
+                    
+        #             self.fetch_daemon_log(tlog_thread, self.log_files) 
+                    
+        #             if self.issue_record:
+        #                 fileWriter_object.write_complete_thread_log(pname, tlog_thread, self.issue_record, None, task_type, sub_type, input_tag)
+        #     except KeyError as error:
+        #         logging.info(error)
     
     def dated_log_files(self, pname):
         try:            
