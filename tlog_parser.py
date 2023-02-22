@@ -63,7 +63,7 @@ class TlogParser:
         #Daemon log processor object
         daemonLogProcessor_object = DaemonLogProcessor(self.initializedPath_object, self.outputDirectory_object,\
                                                         self.validation_object, self.oarm_uid)
-        #processing tlog based on different key in the tlog        
+        #processing tlog based on different key in the tlog       
         try:
             if (pname == "GRIFF" or pname == "PACKS") and ctid_map != None:
                 for ctid in ctid_map:
@@ -140,6 +140,7 @@ class TlogParser:
                         logging.info('sms tlog list: %s', sms_tlog)
                         for status in PrismTlogSmsTag:
                             if status.value == sms_tlog["STATUS"]:
+                                #issue thread found so create smsd folder for the 1st time
                                 if not self.prism_smsd_out_folder:
                                     self.create_process_folder(pname, folder)
                                 daemonLogProcessor_object.process_daemon_log(pname, sms_tlog["THREAD"], None, None, None, None)
