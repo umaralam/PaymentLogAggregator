@@ -43,7 +43,7 @@ class TlogParser:
         """
         self.reinitialize_constructor_parameters()
         
-        #call to remove previously executed process folders
+        #calls to remove previously executed process folders
         if pname == "GRIFF":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
             self.remove_old_process_folder(pname, folder)
