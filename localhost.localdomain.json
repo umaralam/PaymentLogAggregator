@@ -1,0 +1,26 @@
+{
+    "localhost.localdomain": {
+        "PAYCORE": {
+            "PAYCORE_SERVICE": {
+                "STATUS": "running", 
+                "WAR_PATH": "", 
+                "CONFIG_FILE": "/etc/systemd/system/PayCore.service", 
+                "ACCESS_LOG_SUFFIX": ".txt", 
+                "PACKAGE": "prism.jar", 
+                "DB_PORT": "3306", 
+                "APPLICATION": "jar", 
+                "ACCESS_LOG_PREFIX": "localhost_access_log", 
+                "DB_NAME": "prism", 
+                "DB_IP": "10.66.5.118", 
+                "CURRENT_VERSION": "SM_7.41.SP2.0", 
+                "TRANS_BASE_DIR": "/PRISM/smsD/SMSD_LOGS", 
+                "NLOG_CONFIG": "/var/cvas/ONMOPAY/PayCore/nlog.config", 
+                "PROCESS_HOME_DIR": "/KETAN/griff-tomcat", 
+                "SERVICE_NAME": "smsD", 
+                "JAR_PATH": "/PRISM/SMSProcess/lib/", 
+                "ACCESS_LOG_PATH": "/KETAN/griff-tomcat/logs",
+                "CONF_PATH": "/PRISM/SMSProcess/conf/"
+            }
+        }
+    }
+}

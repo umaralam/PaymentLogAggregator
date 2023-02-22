@@ -72,6 +72,17 @@ class LogPathFinder():
         search_date = datetime.strftime(self.start_date, "yyyy-MM-dd")
         pname = process_name
         
+        if pname == 'PAYCORE':
+            try:
+                if self.config[self.hostname][pname]['PAYCORE_SERVICE']['NLOG_CONFIG'] != "":
+                    log4j2_path = self.config[self.hostname][pname]['PAYCORE_SERVICE']['NLOG_CONFIG']
+                    self.parse_logger(pname, log4j2_path)
+                else:
+                    logging.error('%s NLOG_CONFIG not present in %s.json file', pname, self.hostname)
+                    logging.error('Hence NLOG_CONFIG will not be fetched for parsing and initializing logs path.')
+            except KeyError as error:
+                logging.exception(error)
+        
         if pname == 'GRIFF':
             try:
                 if self.config[self.hostname][pname]['GRIFF_TOMCAT']['ACCESS_LOG_PATH'] != "":
@@ -290,7 +301,7 @@ class LogPathFinder():
         """
         logging.info('\n')
         logging.info('process name: %s and log4j path: %s', pname, log4j)
- 
+            
         if pname == 'GRIFF':
             tree = ET.parse(log4j)
             try:
@@ -308,7 +319,7 @@ class LogPathFinder():
                 logging.debug(ex)
                 
         elif pname == 'PACKS':
-            if self.create_modified_log4j2_xml(log4j):
+            if self.create_modified_log4j2_xml(pname, log4j):
                 modified_log4j = Path("modified_log4j2.xml")
                 tree = ET.parse(modified_log4j)
                 try:
@@ -336,6 +347,11 @@ class LogPathFinder():
             if pname == "PACKS":
                 modified_log4j2 = Path('modified_log4j2.xml')
                 tree = ET.parse(modified_log4j2)
+            
+            elif pname == "PAYCORE":
+                if self.create_modified_log4j2_xml(pname, log4j2_path):
+                    modified_log4j2 = Path('modified_log4j2.xml')
+                    tree = ET.parse(modified_log4j2)        
             else:
                 tree = ET.parse(log4j2_path)
                 
@@ -745,7 +761,7 @@ class LogPathFinder():
                         #     self.griff_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"] = f'{str(self.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).split(".")[0]}'+f'-{debugMsisdn}.log'
         
     
-    def create_modified_log4j2_xml(self, log4j):
+    def create_modified_log4j2_xml(self, pname, log4j):
         # Parse the input XML file
         tree = ET.parse(log4j)
         root = tree.getroot()
@@ -753,6 +769,8 @@ class LogPathFinder():
         # Remove the xmlns attribute from the root element
         if 'xmlns' in root.attrib:
             root.attrib.pop('xmlns')
+        if 'xmlns:xsi' in root.attrib:
+            root.attrib.pop('xmlns:xsi')
 
         # Remove the namespace prefix from all elements
         for elem in root.getiterator():
@@ -767,7 +785,12 @@ class LogPathFinder():
                     del elem.attrib[name]
 
         # Write the modified XML to a new file
-        with open('modified_log4j2.xml', 'wb') as f:
+        if pname == "PAYCORE":
+            log4j = "modified_nlog.config"
+        elif pname == "PACKS":
+            log4j = "modified_log4j2.xml"
+            
+        with open(log4j, 'wb') as f:
             tree.write(f, encoding='UTF-8', xml_declaration=True)
             return True
     

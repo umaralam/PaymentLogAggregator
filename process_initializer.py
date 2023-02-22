@@ -1,4 +1,3 @@
-
 import logging
 from path_initializer import LogPathFinder
 from log_processor import PROCESSOR
@@ -17,6 +16,25 @@ class Initializer:
         initializedPath_object = LogPathFinder(self.hostname, self.config, self.validation_object)
         try:
             for i in self.config[self.hostname]:
+                try:
+                    if self.config[self.hostname]["PAYCORE"] and i == 'PAYCORE':
+                        initializedPath_object.initialize_path(i)
+                        if initializedPath_object.griff_tomcat_log_path_dict:
+                            formatter = "#" * 100
+                            logging.info('\n')
+                            logging.info('%s TOMCAT PATH INITIALIZED \n %s', i, formatter)
+                            # logging.info('%s', formatter)
+                            for key, value in initializedPath_object.griff_tomcat_log_path_dict.items():
+                                logging.info('%s : %s', key, value)
+                        else:
+                            logging.info('%s TOMCAT PATH NOT INITIALIZED', i)
+                except KeyError as error:
+                    logging.exception(error)                               
+                except ValueError as error:
+                    logging.warning('%s tomcat path not initialized. %s', i, error)
+                except Exception as error:
+                    logging.warning(error)
+                    
                 try:
                     if self.config[self.hostname]["GRIFF"] and i == 'GRIFF':
                         initializedPath_object.initialize_path(i)
