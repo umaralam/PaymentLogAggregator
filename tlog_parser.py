@@ -44,22 +44,16 @@ class TlogParser:
         """
         self.reinitialize_constructor_parameters()
         
-        #call to remove previously executed process folders
         if pname == "GRIFF":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
-            self.remove_old_process_folder(pname, folder)
         elif pname == "PACKS":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")
-            self.remove_old_process_folder(pname, folder)
         elif pname == "PRISM_TOMCAT":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat")
-            self.remove_old_process_folder(pname, folder)
         elif pname == "PRISM_DEAMON":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")
-            self.remove_old_process_folder(pname, folder)
         elif pname == "PRISM_SMSD":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_smsd")
-            self.remove_old_process_folder(pname, folder)
         
         #Daemon log processor object
         daemonLogProcessor_object = DaemonLogProcessor(self.initializedPath_object, self.outputDirectory_object,\
@@ -205,13 +199,13 @@ class TlogParser:
             folder.mkdir(parents=True)
             self.set_process_out_folder(pname, True)
     
-    def remove_old_process_folder(self, pname, folder):
-        #removing process folder if already exists
-        try:
-            logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
-            shutil.rmtree(folder)
-        except FileNotFoundError as error:
-            logging.info('%s out folder does not exists: %s', pname, error)
+    # def remove_old_process_folder(self, pname, folder):
+    #     #removing process folder if already exists
+    #     try:
+    #         logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
+    #         shutil.rmtree(folder)
+    #     except FileNotFoundError as error:
+    #         logging.info('%s out folder does not exists: %s', pname, error)
     
     def set_process_out_folder(self, pname, is_true):
         if pname == "GRIFF":
