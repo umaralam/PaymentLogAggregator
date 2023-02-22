@@ -290,10 +290,9 @@ class LogPathFinder():
         """
         logging.info('\n')
         logging.info('process name: %s and log4j path: %s', pname, log4j)
-        
-        tree = ET.parse(log4j)
-                
+ 
         if pname == 'GRIFF':
+            tree = ET.parse(log4j)
             try:
                 for prop in tree.findall('./Properties/Property'):
                     if (
@@ -309,51 +308,43 @@ class LogPathFinder():
                 logging.debug(ex)
                 
         elif pname == 'PACKS':
-            try:
-                # root = tree.getroot()
-                # root.tag = self.remove_namespace_prefix(root.tag)
-                # for child in root:
-                #     child.tag = self.remove_namespace_prefix(child.tag)
-
-                #     if child.tag == "Properties":
-                #         for prop in child:
-                #             prop.tag = self.remove_namespace_prefix(prop.tag)
-                #             logging.info('property tag: %s', prop)
-                for prop in tree.findall('./Properties/Property'):
-                    if (
-                            prop.attrib.get('name') == 'log.path'\
-                            or prop.attrib.get('name') == 'log.output'\
-                            or prop.attrib.get('name') == 'sys.log.backupBasePath'\
-                            or prop.attrib.get('name') == 'log.backupPath'\
-                            or prop.attrib.get('name') == 'log.rollover.basePath'\
-                            or prop.attrib.get('name') == 'log.rollover.datePattern'\
-                            or prop.attrib.get('name') == 'log.rollover.extension'
-                        ):
-                        
-                        self.packs_tomcat_log4j_property_dict[prop.attrib.get('name')] = prop.text
-                        
-            except ET.ParseError as ex:
-                logging.debug(ex)
+            if self.create_modified_log4j2_xml(log4j):
+                modified_log4j = Path("modified_log4j2.xml")
+                tree = ET.parse(modified_log4j)
+                try:
+                    for prop in tree.findall('./Properties/Property'):
+                        if (
+                                prop.attrib.get('name') == 'log.path'\
+                                or prop.attrib.get('name') == 'log.output'\
+                                or prop.attrib.get('name') == 'sys.log.backupBasePath'\
+                                or prop.attrib.get('name') == 'log.backupPath'\
+                                or prop.attrib.get('name') == 'log.rollover.basePath'\
+                                or prop.attrib.get('name') == 'log.rollover.datePattern'\
+                                or prop.attrib.get('name') == 'log.rollover.extension'
+                            ):
+                            
+                            self.packs_tomcat_log4j_property_dict[prop.attrib.get('name')] = prop.text
+                            
+                except ET.ParseError as ex:
+                    logging.debug(ex)
     
     def parse_logger(self, pname, log4j2_path, sub_process=None):
         """
         Logger reference call to appender
         """
         try:
-            tree = ET.parse(log4j2_path)
+            if pname == "PACKS":
+                modified_log4j2 = Path('modified_log4j2.xml')
+                tree = ET.parse(modified_log4j2)
+            else:
+                tree = ET.parse(log4j2_path)
                 
             if pname == 'GRIFF':
                 for data in tree.findall('./Loggers/AsyncLogger'):
                     self.parse_appender(data, tree, pname)
             
             elif pname == 'PACKS':
-                # root = tree.getroot()
-                # root.tag = self.remove_namespace_prefix(root.tag)
-                # for child in root:
-                #     child.tag = self.remove_namespace_prefix(child.tag)
-                #     if child.tag == "Loggers":
-                #         for logger in child:
-                #             logger.tag = self.remove_namespace_prefix(logger.tag)
+
                 for data in tree.findall('./Loggers/Logger'):
                     self.parse_appender(data, tree, pname)
             
@@ -752,11 +743,33 @@ class LogPathFinder():
                         #     self.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"] = f'{str(self.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).split(".")[0]}'+f'-{debugMsisdn}.log'
                         # elif pname == "PACKS":
                         #     self.griff_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"] = f'{str(self.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).split(".")[0]}'+f'-{debugMsisdn}.log'
+        
     
-    
-    def remove_namespace_prefix(self, tag):
-        # Define a function to remove the namespace prefix from element tags
-        return tag.split('}')[-1]
+    def create_modified_log4j2_xml(self, log4j):
+        # Parse the input XML file
+        tree = ET.parse(log4j)
+        root = tree.getroot()
+
+        # Remove the xmlns attribute from the root element
+        if 'xmlns' in root.attrib:
+            root.attrib.pop('xmlns')
+
+        # Remove the namespace prefix from all elements
+        for elem in root.getiterator():
+            # Remove the namespace prefix from the element tag
+            if '}' in elem.tag:
+                elem.tag = elem.tag.split('}', 1)[1]
+            # Remove the namespace prefix from all attributes
+            for name, value in elem.attrib.items():
+                if '}' in name:
+                    new_name = name.split('}', 1)[1]
+                    elem.attrib[new_name] = value
+                    del elem.attrib[name]
+
+        # Write the modified XML to a new file
+        with open('modified_log4j2.xml', 'wb') as f:
+            tree.write(f, encoding='UTF-8', xml_declaration=True)
+            return True
     
     def reinitialize_is_debug_msisdn(self):
         self.is_debug_msisdn = False
