@@ -31,6 +31,7 @@ class TlogParser:
         self.prism_tomcat_out_folder = False
         self.prism_daemon_out_folder = False
         self.prism_smsd_out_folder = False
+        self.prism_tomcat_access_out_folder = False
         
         #prism required parameters
         self.task_type = ""
@@ -174,6 +175,25 @@ class TlogParser:
                                 return True
         return False
     
+    # def parse_accessLog(self, pname, accesslog_dict):
+    #     if pname == "PRISM_TOMCAT_ACCESS":
+    #         folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat_access")
+    #         self.remove_old_process_folder(pname, folder)
+            
+    #         #Daemon log processor object
+    #         daemonLogProcessor_object = DaemonLogProcessor(self.initializedPath_object, self.outputDirectory_object,\
+    #                                                     self.validation_object, self.oarm_uid)
+    #         if self.log_mode == "error":
+    #             for access_log in accesslog_dict[f"{self.validation_object.fmsisdn}"]:
+    #                 for acc_log in access_log:
+    #                     http_status_code = str(acc_log).split(" ")[-2]
+    #                     logging.info('%s http status code is: %s', pname, http_status_code)
+    #                     if http_status_code != "200":
+    #                         #access hit response is not 200, hence parsing tomcat log
+    #                         if not self.prism_tomcat_access_out_folder:
+    #                             self.create_process_folder(pname, folder)
+    #                         daemonLogProcessor_object.process_daemon_log(pname, self.validation_object.fmsisdn, None, None, None, None)
+                               
     def create_process_folder(self, pname, folder):
         """
             creating process folder
@@ -201,6 +221,8 @@ class TlogParser:
             self.packs_out_folder = is_true
         elif pname == "PRISM_TOMCAT":
             self.prism_tomcat_out_folder = is_true
+        elif pname == "PRISM_TOMCAT_ACCESS":
+            self.prism_tomcat_access_out_folder = is_true
         elif pname == "PRISM_DEAMON":
             self.prism_daemon_out_folder = is_true
         elif pname == "PRISM_SMSD":
