@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
 import socket
+import os
 
 class LogPathFinder():
     """
@@ -18,6 +19,20 @@ class LogPathFinder():
         self.hostname = hostname
         self.debugMsisdn = ""
         
+        #onmopay processes process conf path
+        self.onmopay_consumer_process_home_dir = "onmopay_consumer_process_home_dir"
+        self.onmopay_paycore_process_home_dir = "onmopay_paycore_process_home_dir"
+        self.onmopay_paycore_webapi_process_home_dir = "onmopay_paycore_webapi_process_home_dir"
+        self.onmopay_callback_delivery_process_home_dir = "onmopay_callback_delivery_process_home_dir"
+        self.onmopay_failed_logprocessor_process_home_dir = "onmopay_failed_logprocessor_process_home_dir"
+        
+        #onmopay dictionary object
+        self.onmopay_consumer_log_path_dict = {}
+        self.onmopay_paycore_log_path_dict = {}
+        self.onmopay_paycoreWebApi_log_path_dict = {}
+        self.onmopay_callbackDelivery_log_path_dict = {}
+        self.onmopay_failedLogProcessor_log_path_dict = {}
+        
         #griff tomcat dictionary object
         self.griff_tomcat_log_path_dict = {}
         self.griff_tomcat_log4j_property_dict = {}
@@ -30,6 +45,8 @@ class LogPathFinder():
         self.prism_tomcat_log_path_dict = {}
         self.prism_daemon_log_path_dict = {}
         self.prism_smsd_log_path_dict = {}
+        
+        
         
         #griff catalina home and access path paramter
         self.griff_process_home_directory = "griff_process_home_directory"
@@ -72,14 +89,78 @@ class LogPathFinder():
         search_date = datetime.strftime(self.start_date, "yyyy-MM-dd")
         pname = process_name
         
-        if pname == 'PAYCORE':
+        if pname == 'ONMOPAY':
             try:
-                if self.config[self.hostname][pname]['PAYCORE_SERVICE']['NLOG_CONFIG'] != "":
-                    log4j2_path = self.config[self.hostname][pname]['PAYCORE_SERVICE']['NLOG_CONFIG']
-                    self.parse_logger(pname, log4j2_path)
-                else:
-                    logging.error('%s NLOG_CONFIG not present in %s.json file', pname, self.hostname)
-                    logging.error('Hence NLOG_CONFIG will not be fetched for parsing and initializing logs path.')
+                for sub_service in self.config[self.hostname][pname]:
+                    if sub_service == "CONSUMER_SERVICE":
+                        if self.config[self.hostname][pname]['CONSUMER_SERVICE']['PROCESS_HOME_DIR'] != "":
+                            self.onmopay_consumer_process_home_dir = self.config[self.hostname][pname]['CONSUMER_SERVICE']['PROCESS_HOME_DIR']    
+                        else:
+                            logging.error('%s CONF_PATH not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence CONF_PATH will not be fetched for replacing in logs path.')
+                        
+                        if self.config[self.hostname][pname]['CONSUMER_SERVICE']['NLOG_CONFIG'] != "":
+                            log4j2_path = self.config[self.hostname][pname]['CONSUMER_SERVICE']['NLOG_CONFIG']
+                            self.parse_logger(sub_service, log4j2_path)
+                        else:
+                            logging.error('%s NLOG_CONFIG not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence %s NLOG_CONFIG will not be fetched for parsing and initializing logs path', sub_service)
+                    
+                    elif sub_service == "PAYCORE_SERVICE":
+                        if self.config[self.hostname][pname]['PAYCORE_SERVICE']['PROCESS_HOME_DIR'] != "":
+                            self.onmopay_paycore_process_home_dir = self.config[self.hostname][pname]['PAYCORE_SERVICE']['PROCESS_HOME_DIR']    
+                        else:
+                            logging.error('%s CONF_PATH not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence CONF_PATH will not be fetched for replacing in logs path.')
+                        
+                        if self.config[self.hostname][pname]['PAYCORE_SERVICE']['NLOG_CONFIG'] != "":
+                            log4j2_path = self.config[self.hostname][pname]['PAYCORE_SERVICE']['NLOG_CONFIG']
+                            self.parse_logger(sub_service, log4j2_path)
+                        else:
+                            logging.error('%s NLOG_CONFIG not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence %s NLOG_CONFIG will not be fetched for parsing and initializing logs path', sub_service)
+                    
+                    elif sub_service == "PAYCORE_WEBAPI_SERVICE":
+                        if self.config[self.hostname][pname]['PAYCORE_WEBAPI_SERVICE']['PROCESS_HOME_DIR'] != "":
+                            self.onmopay_paycore_webapi_process_home_dir = self.config[self.hostname][pname]['PAYCORE_WEBAPI_SERVICE']['PROCESS_HOME_DIR']    
+                        else:
+                            logging.error('%s CONF_PATH not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence CONF_PATH will not be fetched for replacing in logs path.')
+                        
+                        if self.config[self.hostname][pname]['PAYCORE_WEBAPI_SERVICE']['NLOG_CONFIG'] != "":
+                            log4j2_path = self.config[self.hostname][pname]['PAYCORE_WEBAPI_SERVICE']['NLOG_CONFIG']
+                            self.parse_logger(sub_service, log4j2_path)
+                        else:
+                            logging.error('%s NLOG_CONFIG not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence %s NLOG_CONFIG will not be fetched for parsing and initializing logs path', sub_service)
+                    
+                    elif sub_service == "CALLBACK_DELIVERY_SERVICE":
+                        if self.config[self.hostname][pname]['CALLBACK_DELIVERY_SERVICE']['PROCESS_HOME_DIR'] != "":
+                            self.onmopay_callback_delivery_process_home_dir = self.config[self.hostname][pname]['CALLBACK_DELIVERY_SERVICE']['PROCESS_HOME_DIR']    
+                        else:
+                            logging.error('%s CONF_PATH not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence CONF_PATH will not be fetched for replacing in logs path.')
+                        
+                        if self.config[self.hostname][pname]['CALLBACK_DELIVERY_SERVICE']['NLOG_CONFIG'] != "":
+                            log4j2_path = self.config[self.hostname][pname]['CALLBACK_DELIVERY_SERVICE']['NLOG_CONFIG']
+                            self.parse_logger(sub_service, log4j2_path)
+                        else:
+                            logging.error('%s NLOG_CONFIG not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence %s NLOG_CONFIG will not be fetched for parsing and initializing logs path', sub_service)
+                    
+                    elif sub_service == "FAILED_LOG_PROCESSOR_SERVICE":
+                        if self.config[self.hostname][pname]['FAILED_LOG_PROCESSOR_SERVICE']['PROCESS_HOME_DIR'] != "":
+                            self.onmopay_failed_logprocessor_process_home_dir = self.config[self.hostname][pname]['FAILED_LOG_PROCESSOR_SERVICE']['PROCESS_HOME_DIR']    
+                        else:
+                            logging.error('%s CONF_PATH not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence CONF_PATH will not be fetched for replacing in logs path.')
+                        
+                        if self.config[self.hostname][pname]['FAILED_LOG_PROCESSOR_SERVICE']['NLOG_CONFIG'] != "":
+                            log4j2_path = self.config[self.hostname][pname]['FAILED_LOG_PROCESSOR_SERVICE']['NLOG_CONFIG']
+                            self.parse_logger(sub_service, log4j2_path)
+                        else:
+                            logging.error('%s NLOG_CONFIG not present in %s.json file', sub_service, self.hostname)
+                            logging.error('Hence %s NLOG_CONFIG will not be fetched for parsing and initializing logs path', sub_service)
             except KeyError as error:
                 logging.exception(error)
         
@@ -344,23 +425,37 @@ class LogPathFinder():
         Logger reference call to appender
         """
         try:
-            if pname == "PACKS":
-                modified_log4j2 = Path('modified_log4j2.xml')
-                tree = ET.parse(modified_log4j2)
-            
-            elif pname == "PAYCORE":
+            if pname == "CONSUMER_SERVICE" or pname == "PAYCORE_SERVICE"\
+                or pname == "PAYCORE_WEBAPI_SERVICE" or pname == "CALLBACK_DELIVERY_SERVICE"\
+                or pname == "FAILED_LOG_PROCESSOR_SERVICE":               
                 if self.create_modified_log4j2_xml(pname, log4j2_path):
-                    modified_log4j2 = Path('modified_log4j2.xml')
-                    tree = ET.parse(modified_log4j2)        
-            else:
-                tree = ET.parse(log4j2_path)
-                
-            if pname == 'GRIFF':
+                    modified_log4j2 = Path('modified_nlog.config')
+                    tree = ET.parse(modified_log4j2)
+                    
+                    if pname == "CONSUMER_SERVICE":
+                        for data in tree.findall('./logger'):
+                            self.parse_appender(data, tree, pname)
+                    elif pname == "PAYCORE_SERVICE":
+                        for data in tree.findall('./rules/logger'):
+                            self.parse_appender(data, tree, pname)
+                    elif pname == "PAYCORE_WEBAPI_SERVICE":
+                        for data in tree.findall('./rules/logger'):
+                            self.parse_appender(data, tree, pname)
+                    elif pname == "CALLBACK_DELIVERY_SERVICE":
+                        for data in tree.findall('./rules/logger'):
+                            self.parse_appender(data, tree, pname)
+                    elif pname == "FAILED_LOG_PROCESSOR_SERVICE":
+                        for data in tree.findall('./rules/logger'):
+                            self.parse_appender(data, tree, pname)
+
+            elif pname == 'GRIFF':
                 for data in tree.findall('./Loggers/AsyncLogger'):
                     self.parse_appender(data, tree, pname)
             
             elif pname == 'PACKS':
-
+                modified_log4j2 = Path('modified_log4j2.xml')
+                tree = ET.parse(modified_log4j2)
+                
                 for data in tree.findall('./Loggers/Logger'):
                     self.parse_appender(data, tree, pname)
             
@@ -379,86 +474,30 @@ class LogPathFinder():
         Parse appender for loggers reference
         """
         try:
-            for logger in data.findall('AppenderRef'):
-                if pname == 'PACKS':
-                    logger_ref = str(logger.attrib.get('ref'))\
-                            .replace("${log.output}", self.packs_tomcat_log4j_property_dict['log.output'])
-                
-                elif pname == 'GRIFF':
-                    logger_ref = str(logger.attrib.get('ref'))
-                
-                elif pname == 'PRISM' and sub_process != None:
-                    logger_ref = str(logger.attrib.get('ref'))
-                   
-                for routing in tree.findall('./Appenders/Routing'):
-                    if logger_ref == str(routing.attrib.get('name')):
-                        for routes in tree.findall('./Appenders/Routing/Routes'):
-                            #call to routing for re-routing the references
-                            self.parse_routing_appender(routes, tree, pname, logger_ref, routing, sub_process)
-                            
-                        if self.is_routing_success:
-                            break  
-                else:            
-                    for appender in tree.findall('./Appenders/RollingRandomAccessFile'):
-                        if logger_ref == str(appender.attrib.get('name')):
-                            if (
-                                    str(appender.attrib.get('fileName')).startswith('${log.basePath}')\
-                                    or str(appender.attrib.get('fileName')).startswith('${sys:catalina.home}')\
-                                    or str(appender.attrib.get('fileName')).startswith('${log.path}')
-                                ):
-                                if pname == 'GRIFF':
-                                    replacedValue = str(appender.attrib.get('fileName'))\
-                                                    .replace("${log.basePath}", self.griff_tomcat_log4j_property_dict['log.basePath'])\
-                                                    .replace("${sys:catalina.home}", self.griff_tomcat_log_path_dict[self.griff_process_home_directory])
+            if not (pname == "CONSUMER_SERVICE" or pname == "PAYCORE_SERVICE" 
+                    or pname == "PAYCORE_WEBAPI_SERVICE" or pname == "CALLBACK_DELIVERY_SERVICE"
+                    or pname == "FAILED_LOG_PROCESSOR_SERVICE"):             
+                for logger in data.findall('AppenderRef'):                        
+                    if pname == 'GRIFF':
+                        logger_ref = str(logger.attrib.get('ref'))
+                        
+                    elif pname == 'PACKS':
+                        logger_ref = str(logger.attrib.get('ref'))\
+                                .replace("${log.output}", self.packs_tomcat_log4j_property_dict['log.output'])
+                    
+                    elif pname == 'PRISM' and sub_process != None:
+                        logger_ref = str(logger.attrib.get('ref'))
+                    
+                    for routing in tree.findall('./Appenders/Routing'):
+                        if logger_ref == str(routing.attrib.get('name')):
+                            for routes in tree.findall('./Appenders/Routing/Routes'):
+                                #call to routing for re-routing the references
+                                self.parse_routing_appender(routes, tree, pname, logger_ref, routing, sub_process)
                                 
-                                    self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_log"] = replacedValue
-                                
-                                elif pname == 'PACKS':
-                                    replacedValue = str(appender.attrib.get('fileName'))\
-                                                    .replace("${sys:catalina.home}", self.packs_tomcat_log_path_dict[self.packs_process_home_directory])\
-                                                    .replace("${log.path}", self.packs_tomcat_log4j_property_dict['log.path'])
-                                
-                                    self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_log"] = replacedValue
-                                    
-                                if (
-                                        str(appender.attrib.get('filePattern')).startswith('${log.backupBasePath}')\
-                                        or str(appender.attrib.get('filePattern')).startswith('${sys:catalina.home}')\
-                                        or str(appender.attrib.get('filePattern')).startswith('${log.rollover.basePath}')
-                                    ):
-                                    
-                                    if pname == 'GRIFF':
-                                        replacedValue = str(appender.attrib.get('filePattern'))\
-                                                .replace("${sys:catalina.home}", self.griff_tomcat_log_path_dict[self.griff_process_home_directory])\
-                                                .replace("${log.backupBasePath}", self.griff_tomcat_log4j_property_dict['log.backupBasePath'])\
-                                                .replace("${log.rollover.datePattern}", self.griff_tomcat_log4j_property_dict['log.rollover.datePattern'])\
-                                                .replace("${log.rollover.extension}", self.griff_tomcat_log4j_property_dict['log.rollover.extension'])
-                                        
-                                        self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_backup_log"] = replacedValue
-                                        
-                                    elif pname == 'PACKS': 
-                                        replacedValue = str(appender.attrib.get('filePattern'))\
-                                                .replace("${sys:catalina.home}", self.packs_tomcat_log_path_dict[self.packs_process_home_directory])\
-                                                .replace("${log.backupBasePath}", self.packs_tomcat_log4j_property_dict['sys.log.backupBasePath'])\
-                                                .replace("${log.rollover.datePattern}", self.packs_tomcat_log4j_property_dict['log.rollover.datePattern'])\
-                                                .replace("${log.rollover.extension}", self.packs_tomcat_log4j_property_dict['log.rollover.extension'])\
-                                                .replace("${log.rollover.basePath}", self.packs_tomcat_log4j_property_dict['log.rollover.basePath'])
-                                        
-                                        self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_backup_log"] = replacedValue   
-                                else:
-                                    if pname == 'GRIFF':
-                                        self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_backup_log"] = appender.attrib.get('filePattern')
-                                    elif pname == 'PACKS':
-                                        self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_backup_log"] = appender.attrib.get('filePattern')
-                                        
-                            else:
-                                if pname == 'GRIFF':
-                                    self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_log"] = appender.attrib.get('fileName')
-                                elif pname == 'PACKS':
-                                    self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_log"] = appender.attrib.get('fileName')
-                                    
-                            break
+                            if self.is_routing_success:
+                                break  
                     else:
-                        for appender in tree.findall('./Appenders/RollingFile'):
+                        for appender in tree.findall('./Appenders/RollingRandomAccessFile'):
                             if logger_ref == str(appender.attrib.get('name')):
                                 if (
                                         str(appender.attrib.get('fileName')).startswith('${log.basePath}')\
@@ -478,7 +517,7 @@ class LogPathFinder():
                                                         .replace("${log.path}", self.packs_tomcat_log4j_property_dict['log.path'])
                                     
                                         self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_log"] = replacedValue
-                                    
+                                        
                                     if (
                                             str(appender.attrib.get('filePattern')).startswith('${log.backupBasePath}')\
                                             or str(appender.attrib.get('filePattern')).startswith('${sys:catalina.home}')\
@@ -493,53 +532,164 @@ class LogPathFinder():
                                                     .replace("${log.rollover.extension}", self.griff_tomcat_log4j_property_dict['log.rollover.extension'])
                                             
                                             self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_backup_log"] = replacedValue
-                                        
-                                        elif pname == 'PACKS':
+                                            
+                                        elif pname == 'PACKS': 
                                             replacedValue = str(appender.attrib.get('filePattern'))\
                                                     .replace("${sys:catalina.home}", self.packs_tomcat_log_path_dict[self.packs_process_home_directory])\
                                                     .replace("${log.backupBasePath}", self.packs_tomcat_log4j_property_dict['sys.log.backupBasePath'])\
                                                     .replace("${log.rollover.datePattern}", self.packs_tomcat_log4j_property_dict['log.rollover.datePattern'])\
                                                     .replace("${log.rollover.extension}", self.packs_tomcat_log4j_property_dict['log.rollover.extension'])\
                                                     .replace("${log.rollover.basePath}", self.packs_tomcat_log4j_property_dict['log.rollover.basePath'])
-                                                    
-                                            self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_backup_log"] = replacedValue
                                             
+                                            self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_backup_log"] = replacedValue   
                                     else:
                                         if pname == 'GRIFF':
                                             self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_backup_log"] = appender.attrib.get('filePattern')
                                         elif pname == 'PACKS':
                                             self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_backup_log"] = appender.attrib.get('filePattern')
+                                            
                                 else:
                                     if pname == 'GRIFF':
                                         self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_log"] = appender.attrib.get('fileName')
-                                    
                                     elif pname == 'PACKS':
                                         self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_log"] = appender.attrib.get('fileName')
-                                    
-                                    elif pname == 'PRISM' and sub_process != None:
-                                        yearAndmonth = datetime.strftime(self.start_date, 'yyyy-MM')
-                                        search_date = datetime.strftime(self.start_date, "yyyy-MM-dd")
-                                        
-                                        replacedValue = str(appender.attrib.get('filePattern'))\
-                                                            .replace("$${date:yyyy-MM}", f'{yearAndmonth}')\
-                                                            .replace("%d{yyyy-MM-dd.HH}-%i", f'{search_date}*')
-                                        
-                                        if sub_process == 'PRISM_TOMCAT':
-                                            self.prism_tomcat_log_path_dict[f"prism_tomcat_{logger_ref}_log"] = appender.attrib.get('fileName')
-                                            self.prism_tomcat_log_path_dict[f"prism_tomcat_{logger_ref}_backup_log"] = replacedValue
-                                        
-                                        elif sub_process == 'PRISM_DEAMON':
-                                            self.prism_daemon_log_path_dict[f"prism_daemon_{logger_ref}_log"] = appender.attrib.get('fileName')
-                                            self.prism_daemon_log_path_dict[f"prism_daemon_{logger_ref}_backup_log"] = replacedValue
-                                        
-                                        elif sub_process == 'PRISM_SMSD':
-                                            self.prism_smsd_log_path_dict[f"prism_smsd_{logger_ref}_log"] = appender.attrib.get('fileName')
-                                            self.prism_smsd_log_path_dict[f"prism_smsd_{logger_ref}_backup_log"] = replacedValue
                                         
                                 break
                         else:
-                            logging.info('No Appender defined for the logger: %s', logger_ref)
+                            for appender in tree.findall('./Appenders/RollingFile'):
+                                if logger_ref == str(appender.attrib.get('name')):
+                                    if (
+                                            str(appender.attrib.get('fileName')).startswith('${log.basePath}')\
+                                            or str(appender.attrib.get('fileName')).startswith('${sys:catalina.home}')\
+                                            or str(appender.attrib.get('fileName')).startswith('${log.path}')
+                                        ):
+                                        if pname == 'GRIFF':
+                                            replacedValue = str(appender.attrib.get('fileName'))\
+                                                            .replace("${log.basePath}", self.griff_tomcat_log4j_property_dict['log.basePath'])\
+                                                            .replace("${sys:catalina.home}", self.griff_tomcat_log_path_dict[self.griff_process_home_directory])
+                                        
+                                            self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_log"] = replacedValue
+                                        
+                                        elif pname == 'PACKS':
+                                            replacedValue = str(appender.attrib.get('fileName'))\
+                                                            .replace("${sys:catalina.home}", self.packs_tomcat_log_path_dict[self.packs_process_home_directory])\
+                                                            .replace("${log.path}", self.packs_tomcat_log4j_property_dict['log.path'])
+                                        
+                                            self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_log"] = replacedValue
+                                        
+                                        if (
+                                                str(appender.attrib.get('filePattern')).startswith('${log.backupBasePath}')\
+                                                or str(appender.attrib.get('filePattern')).startswith('${sys:catalina.home}')\
+                                                or str(appender.attrib.get('filePattern')).startswith('${log.rollover.basePath}')
+                                            ):
+                                            
+                                            if pname == 'GRIFF':
+                                                replacedValue = str(appender.attrib.get('filePattern'))\
+                                                        .replace("${sys:catalina.home}", self.griff_tomcat_log_path_dict[self.griff_process_home_directory])\
+                                                        .replace("${log.backupBasePath}", self.griff_tomcat_log4j_property_dict['log.backupBasePath'])\
+                                                        .replace("${log.rollover.datePattern}", self.griff_tomcat_log4j_property_dict['log.rollover.datePattern'])\
+                                                        .replace("${log.rollover.extension}", self.griff_tomcat_log4j_property_dict['log.rollover.extension'])
+                                                
+                                                self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_backup_log"] = replacedValue
+                                            
+                                            elif pname == 'PACKS':
+                                                replacedValue = str(appender.attrib.get('filePattern'))\
+                                                        .replace("${sys:catalina.home}", self.packs_tomcat_log_path_dict[self.packs_process_home_directory])\
+                                                        .replace("${log.backupBasePath}", self.packs_tomcat_log4j_property_dict['sys.log.backupBasePath'])\
+                                                        .replace("${log.rollover.datePattern}", self.packs_tomcat_log4j_property_dict['log.rollover.datePattern'])\
+                                                        .replace("${log.rollover.extension}", self.packs_tomcat_log4j_property_dict['log.rollover.extension'])\
+                                                        .replace("${log.rollover.basePath}", self.packs_tomcat_log4j_property_dict['log.rollover.basePath'])
+                                                        
+                                                self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_backup_log"] = replacedValue
+                                                
+                                        else:
+                                            if pname == 'GRIFF':
+                                                self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_backup_log"] = appender.attrib.get('filePattern')
+                                            elif pname == 'PACKS':
+                                                self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_backup_log"] = appender.attrib.get('filePattern')
+                                    else:
+                                        if pname == 'GRIFF':
+                                            self.griff_tomcat_log_path_dict[f"griff_{logger_ref}_log"] = appender.attrib.get('fileName')
+                                        
+                                        elif pname == 'PACKS':
+                                            self.packs_tomcat_log_path_dict[f"packs_{logger_ref}_log"] = appender.attrib.get('fileName')
+                                        
+                                        elif pname == 'PRISM' and sub_process != None:
+                                            yearAndmonth = datetime.strftime(self.start_date, 'yyyy-MM')
+                                            search_date = datetime.strftime(self.start_date, "yyyy-MM-dd")
+                                            
+                                            replacedValue = str(appender.attrib.get('filePattern'))\
+                                                                .replace("$${date:yyyy-MM}", f'{yearAndmonth}')\
+                                                                .replace("%d{yyyy-MM-dd.HH}-%i", f'{search_date}*')
+                                            
+                                            if sub_process == 'PRISM_TOMCAT':
+                                                self.prism_tomcat_log_path_dict[f"prism_tomcat_{logger_ref}_log"] = appender.attrib.get('fileName')
+                                                self.prism_tomcat_log_path_dict[f"prism_tomcat_{logger_ref}_backup_log"] = replacedValue
+                                            
+                                            elif sub_process == 'PRISM_DEAMON':
+                                                self.prism_daemon_log_path_dict[f"prism_daemon_{logger_ref}_log"] = appender.attrib.get('fileName')
+                                                self.prism_daemon_log_path_dict[f"prism_daemon_{logger_ref}_backup_log"] = replacedValue
+                                            
+                                            elif sub_process == 'PRISM_SMSD':
+                                                self.prism_smsd_log_path_dict[f"prism_smsd_{logger_ref}_log"] = appender.attrib.get('fileName')
+                                                self.prism_smsd_log_path_dict[f"prism_smsd_{logger_ref}_backup_log"] = replacedValue
+                                            
+                                    break
+                            else:
+                                logging.info('No Appender defined for the logger: %s', logger_ref)
+            else:
+                if pname == "CONSUMER_SERVICE":
+                    for logger in data.findall('appender-ref'):
+                        logger_ref = str(logger.attrib.get('ref'))
+                        
+                        for appender in tree.findall('./appender'):
+                            if logger_ref == str(appender.attrib.get('name')):
+                                for f in appender.findall('file'):
+                                    replacedValue = str(f.attrib.get('value'))\
+                                                    .replace("%property{log4net:HostName}", self.hostname)\
+                                                    .replace("%utcdate{yyyyMMdd}", "utc_yyyyMMdd")\
+                                                    .replace("./", f"{self.onmopay_consumer_process_home_dir}/")
+                                    self.onmopay_consumer_log_path_dict[f"onmopay_consumer_{logger_ref}_log"] = replacedValue    
+                    
+                elif pname == "PAYCORE_SERVICE":
+                    logger_ref = str(data.attrib.get('writeTo'))
+                    
+                    for appender in tree.findall('./targets/target'):
+                        if logger_ref == str(appender.attrib.get('name')):
+                            replacedValue = str(appender.attrib.get('fileName'))\
+                                            .replace("${hostname}", self.hostname)\
+                                            .replace("./", f"{self.onmopay_paycore_process_home_dir}/")
+                            self.onmopay_paycore_log_path_dict[f"onmopay_paycore_{logger_ref}_log"] = replacedValue                           
                 
+                elif pname == "PAYCORE_WEBAPI_SERVICE":
+                    logger_ref = str(data.attrib.get('writeTo'))
+                    
+                    for appender in tree.findall('./targets/target'):
+                        if logger_ref == str(appender.attrib.get('name')):
+                            replacedValue = str(appender.attrib.get('fileName'))\
+                                            .replace("${hostname}", self.hostname)\
+                                            .replace("./", f"{self.onmopay_paycore_webapi_process_home_dir}/")
+                            self.onmopay_paycoreWebApi_log_path_dict[f"onmopay_paycore_webapi_{logger_ref}_log"] = replacedValue                           
+                
+                elif pname == "CALLBACK_DELIVERY_SERVICE":
+                    logger_ref = str(data.attrib.get('writeTo'))
+                    
+                    for appender in tree.findall('./targets/target'):
+                        if logger_ref == str(appender.attrib.get('name')):
+                            replacedValue = str(appender.attrib.get('fileName'))\
+                                            .replace("${hostname}", self.hostname)\
+                                            .replace("./", f"{self.onmopay_callback_delivery_process_home_dir}/")
+                            self.onmopay_callbackDelivery_log_path_dict[f"onmopay_callback_delivery_{logger_ref}_log"] = replacedValue                           
+                
+                elif pname == "FAILED_LOG_PROCESSOR_SERVICE":
+                    logger_ref = str(data.attrib.get('writeTo'))
+                    
+                    for appender in tree.findall('./targets/target'):
+                        if logger_ref == str(appender.attrib.get('name')):
+                            replacedValue = str(appender.attrib.get('fileName'))\
+                                            .replace("${hostname}", self.hostname)\
+                                            .replace("./", f"{self.onmopay_failed_logprocessor_process_home_dir}/")
+                            self.onmopay_failedLogProcessor_log_path_dict[f"onmopay_failedlog_processor_{logger_ref}_log"] = replacedValue                           
         except ET.ParseError as ex:
             logging.debug(ex)
         
@@ -783,9 +933,11 @@ class LogPathFinder():
                     new_name = name.split('}', 1)[1]
                     elem.attrib[new_name] = value
                     del elem.attrib[name]
-
+                    
         # Write the modified XML to a new file
-        if pname == "PAYCORE":
+        if pname == "CONSUMER_SERVICE" or pname == "PAYCORE_SERVICE"\
+            or pname == "PAYCORE_WEBAPI_SERVICE" or pname == "CALLBACK_DELIVERY_SERVICE"\
+            or pname == "FAILED_LOG_PROCESSOR_SERVICE":
             log4j = "modified_nlog.config"
         elif pname == "PACKS":
             log4j = "modified_log4j2.xml"

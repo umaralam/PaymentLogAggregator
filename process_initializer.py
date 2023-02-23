@@ -17,21 +17,97 @@ class Initializer:
         try:
             for i in self.config[self.hostname]:
                 try:
-                    if self.config[self.hostname]["PAYCORE"] and i == 'PAYCORE':
+                    if self.config[self.hostname]["ONMOPAY"] and i == 'ONMOPAY':
                         initializedPath_object.initialize_path(i)
-                        if initializedPath_object.griff_tomcat_log_path_dict:
+                        if initializedPath_object.onmopay_consumer_log_path_dict:
                             formatter = "#" * 100
                             logging.info('\n')
-                            logging.info('%s TOMCAT PATH INITIALIZED \n %s', i, formatter)
+                            logging.info('%s CONSUMER PATH INITIALIZED \n %s', i, formatter)
                             # logging.info('%s', formatter)
-                            for key, value in initializedPath_object.griff_tomcat_log_path_dict.items():
+                            for key, value in initializedPath_object.onmopay_consumer_log_path_dict.items():
                                 logging.info('%s : %s', key, value)
                         else:
-                            logging.info('%s TOMCAT PATH NOT INITIALIZED', i)
+                            logging.info('%s CONSUMER PATH NOT INITIALIZED', i)
                 except KeyError as error:
-                    logging.exception(error)                               
+                    logging.info('onmopay CONSUMER process not present in %s.json file, hence processing would not be done for CONSUMER', self.hostname)                              
                 except ValueError as error:
-                    logging.warning('%s tomcat path not initialized. %s', i, error)
+                    logging.warning('%s CONSUMER path not initialized. %s', i, error)
+                except Exception as error:
+                    logging.warning(error)
+                
+                try:
+                    if self.config[self.hostname]["ONMOPAY"] and i == 'ONMOPAY':
+                        initializedPath_object.initialize_path(i)
+                        if initializedPath_object.onmopay_paycore_log_path_dict:
+                            formatter = "#" * 100
+                            logging.info('\n')
+                            logging.info('%s PAYCORE PATH INITIALIZED \n %s', i, formatter)
+                            # logging.info('%s', formatter)
+                            for key, value in initializedPath_object.onmopay_paycore_log_path_dict.items():
+                                logging.info('%s : %s', key, value)
+                        else:
+                            logging.info('%s PAYCORE PATH NOT INITIALIZED', i)
+                except KeyError as error:
+                    logging.info('onmopay PAYCORE process not present in %s.json file, hence processing would not be done for PAYCORE', self.hostname)                              
+                except ValueError as error:
+                    logging.warning('%s PAYCORE path not initialized. %s', i, error)
+                except Exception as error:
+                    logging.warning(error)
+                
+                try:
+                    if self.config[self.hostname]["ONMOPAY"] and i == 'ONMOPAY':
+                        initializedPath_object.initialize_path(i)
+                        if initializedPath_object.onmopay_paycoreWebApi_log_path_dict:
+                            formatter = "#" * 100
+                            logging.info('\n')
+                            logging.info('%s PAYCORE WEBAPI PATH INITIALIZED \n %s', i, formatter)
+                            # logging.info('%s', formatter)
+                            for key, value in initializedPath_object.onmopay_paycoreWebApi_log_path_dict.items():
+                                logging.info('%s : %s', key, value)
+                        else:
+                            logging.info('%s PAYCORE WEBAPI PATH NOT INITIALIZED', i)
+                except KeyError as error:
+                    logging.info('onmopay PAYCORE WEBAPI process not present in %s.json file, hence processing would not be done for PAYCORE WEBAPI', self.hostname)                              
+                except ValueError as error:
+                    logging.warning('%s PAYCORE WEBAPI path not initialized. %s', i, error)
+                except Exception as error:
+                    logging.warning(error)
+                
+                try:
+                    if self.config[self.hostname]["ONMOPAY"] and i == 'ONMOPAY':
+                        initializedPath_object.initialize_path(i)
+                        if initializedPath_object.onmopay_callbackDelivery_log_path_dict:
+                            formatter = "#" * 100
+                            logging.info('\n')
+                            logging.info('%s CALLBACK DELIVERY PATH INITIALIZED \n %s', i, formatter)
+                            # logging.info('%s', formatter)
+                            for key, value in initializedPath_object.onmopay_callbackDelivery_log_path_dict.items():
+                                logging.info('%s : %s', key, value)
+                        else:
+                            logging.info('%s CALLBACK DELIVERY PATH NOT INITIALIZED', i)
+                except KeyError as error:
+                    logging.info('onmopay CALLBACK DELIVERY process not present in %s.json file, hence processing would not be done for CALLBACK DELIVERY', self.hostname)                              
+                except ValueError as error:
+                    logging.warning('%s CALLBACK DELIVERY path not initialized. %s', i, error)
+                except Exception as error:
+                    logging.warning(error)
+                
+                try:
+                    if self.config[self.hostname]["ONMOPAY"] and i == 'ONMOPAY':
+                        initializedPath_object.initialize_path(i)
+                        if initializedPath_object.onmopay_failedLogProcessor_log_path_dict:
+                            formatter = "#" * 100
+                            logging.info('\n')
+                            logging.info('%s FAILED LOG PROCESSOR PATH INITIALIZED \n %s', i, formatter)
+                            # logging.info('%s', formatter)
+                            for key, value in initializedPath_object.onmopay_failedLogProcessor_log_path_dict.items():
+                                logging.info('%s : %s', key, value)
+                        else:
+                            logging.info('%s FAILED LOG PROCESSOR PATH NOT INITIALIZED', i)
+                except KeyError as error:
+                    logging.info('onmopay FAILED LOG PROCESSOR process not present in %s.json file, hence processing would not be done for FAILED LOG PROCESSOR', self.hostname)                              
+                except ValueError as error:
+                    logging.warning('%s FAILED LOG PROCESSOR path not initialized. %s', i, error)
                 except Exception as error:
                     logging.warning(error)
                     
@@ -48,7 +124,8 @@ class Initializer:
                         else:
                             logging.info('%s TOMCAT PATH NOT INITIALIZED', i)
                 except KeyError as error:
-                    logging.exception(error)                               
+                    logging.info('\n')
+                    logging.info('GRIFF process not present in %s.json file, hence processing would not be done for GRIFF', self.hostname)                             
                 except ValueError as error:
                     logging.warning('%s tomcat path not initialized. %s', i, error)
                 except Exception as error:
@@ -67,7 +144,8 @@ class Initializer:
                         else:
                             logging.error('%s TOMCAT PATH NOT INITIALIZED', i)
                 except KeyError as error:
-                    logging.exception(error)
+                    logging.info('\n')
+                    logging.info('PACKS process not present in %s.json file, hence processing would not be done for PACKS', self.hostname)
                 except ValueError as error:
                     logging.warning('%s tomcat path not initialized. %s', i, error)
                 except Exception as error:
@@ -130,7 +208,8 @@ class Initializer:
                                             Hence PRISM_SMSD logs will not be initialized and fetched', i, self.hostname
                                         )
                 except KeyError as error:
-                    logging.exception(error)
+                    logging.info('\n')
+                    logging.info('PRISM process not present in %s.json file, hence processing would not be done for PRISM', self.hostname)
                 except ValueError as error:
                     logging.warning('any of the %s path not initialized', i)
                 except Exception as error:
