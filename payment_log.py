@@ -33,6 +33,10 @@ class Main:
             logging.info('removing old modified_log4j2.xml')
             os.remove('modified_log4j2.xml')
         
+        if os.path.exists('modified_nlog.config'):
+            logging.info('removing old modified_nlog.config')
+            os.remove('modified_nlog.config')
+        
         if validation_object.is_input_valid:
             data = Path(f"{hostname}.json").read_text()
             config = json.loads(data)
