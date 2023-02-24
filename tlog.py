@@ -5,6 +5,7 @@ import subprocess
 from log_files import LogFileFinder
 from collections import defaultdict
 from tlog_parser import TlogParser
+from input_tags import DaiusActivityType
 
 
 class Tlog:
@@ -14,7 +15,7 @@ class Tlog:
     access log data included
     """
     def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode,\
-                    payment_data_dict_list, payment_data_dict, config, griff_tlog_dict,\
+                    payment_data_dict_list, payment_data_dict, config, onmopay_tlog_dict, griff_tlog_dict,\
                     packs_tlog_dict, griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict, prism_daemon_tlog_thread_dict,\
                     prism_tomcat_tlog_thread_dict, prism_tomcat_handler_generic_http_req_resp_dict,\
@@ -61,6 +62,7 @@ class Tlog:
         # self.packs_ctid_data_list = []
         
         #header data mapped tlogs
+        self.onmopay_access_log_dict = {}
         self.griff_access_log_dict = {}
         self.packs_access_log_dict = {}
         self.prism_access_log_dict = {}
@@ -69,9 +71,13 @@ class Tlog:
         self.payment_data_dict_list = payment_data_dict_list
         self.payment_data_dict = payment_data_dict
         self.config = config
+        
+        self.onmopay_tlog_dict = onmopay_tlog_dict
+        
         self.griff_tlog_dict = griff_tlog_dict
-        self.packs_tlog_dict = packs_tlog_dict
         self.griff_ext_hit_tlog_dict = griff_ext_hit_tlog_dict
+        
+        self.packs_tlog_dict = packs_tlog_dict
         self.packs_ext_hit_tlog_dict = packs_ext_hit_tlog_dict
     
         self.prism_ctid = prism_ctid
@@ -103,7 +109,11 @@ class Tlog:
         
         logfile_object = LogFileFinder(self.initializedPath_object, self.validation_object, self.config)
 
-        if pname == "GRIFF" or pname == "PACKS":
+        if pname == "ONMOPAY":
+            self.constructor_parameter_reinitialize()
+            self.constructor_ctid_msisdn_paramter_reinitialization()
+            
+        elif pname == "GRIFF" or pname == "PACKS":
             self.constructor_parameter_reinitialize()
             self.constructor_ctid_msisdn_paramter_reinitialization()
             
@@ -120,19 +130,7 @@ class Tlog:
             
             self.constructor_parameter_reinitialize()
         
-            
-        # elif pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP"\
-        #         or pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP":
-        #     # function call
-        #     self.constructor_parameter_reinitialize()
-        
-        # elif pname == "PRISM_TOMCAT_REQ_RESP_PATH" or pname == "PRISM_TOMCAT_CALLBACK_V2_REQ_RESP"\
-        #         or pname == "PRISM_DAEMON_REQ_RESP_PATH" or pname == "PRISM_DAEMON_CALLBACK_V2_REQ_RESP":
-        #     # function call
-        #     self.constructor_parameter_reinitialize()
-        
         self.tlog_files = logfile_object.get_tlog_files(pname)
-        # logging.info('tlog files ex: %s', self.tlog_files)
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
             self.backup_tlog_files = logfile_object.get_tlog_backup_files(pname)
@@ -141,7 +139,8 @@ class Tlog:
         # logging.info('backup tlog files: %s', self.backup_tlog_files)
         
         if self.tlog_files:
-            if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+            if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
+                or pname == "PACKS_EXTHIT" or pname == "ONMOPAY":
                 for file in self.tlog_files:
                     # function call
                     self.msisdn_ctid_map(pname, file, self.is_backup_file)
@@ -195,7 +194,8 @@ class Tlog:
                 self.msisdn_based_accesslog_fetch(pname, self.access_files)
         
         
-        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
+            or pname == "PACKS_EXTHIT" or pname == "ONMOPAY":
             if self.ctid_msisdn_map_dict and (self.tlog_files_with_ctid_msisdn\
                                             or self.tlog_backup_files_with_ctid_msisdn):
                 if self.tlog_files_with_ctid_msisdn:
@@ -226,7 +226,11 @@ class Tlog:
             else:
                 self.tlog_record_header_mapping(pname, data_list)
         
-        if pname == "GRIFF" and self.griff_tlog_dict:
+        if pname == "ONMOPAY" and self.onmopay_tlog_dict:
+            # outfile_writer.write_json_tlog_data(self.griff_tlog_dict)
+            return self.onmopay_tlog_dict
+        
+        elif pname == "GRIFF" and self.griff_tlog_dict:
             # outfile_writer.write_json_tlog_data(self.griff_tlog_dict)
             return self.griff_tlog_dict
         
@@ -286,7 +290,12 @@ class Tlog:
                                     self.tlog_backup_files_with_ctid_msisdn.append(file)
                 
         else:
-            if pname == "GRIFF":
+            if pname == "ONMOPAY":
+                ctid_mdn_data = subprocess.check_output(f"grep -a {self.validation_object.fmsisdn} {file} | cut -d ',' -f 3,4", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                if ctid_mdn_data:
+                    self.tlog_files_with_ctid_msisdn.append(file)
+            
+            elif pname == "GRIFF":
                 ctid_mdn_data = subprocess.check_output(f"grep -a {self.validation_object.fmsisdn} {file} | cut -d ',' -f 2,12", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                 if ctid_mdn_data:
                     self.tlog_files_with_ctid_msisdn.append(file)
@@ -318,7 +327,11 @@ class Tlog:
                                 if str(row).replace('"', '') == ctid:
                                     self.tlog_files_with_ctid_msisdn.append(file)
                 
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            ctid_msisdn_data = []
+            ctid_msisdn_data = ctid_mdn_data.split('\n')
+        
+        elif pname == "GRIFF":
             ctid_msisdn_data = []
             ctid_msisdn_data = ctid_mdn_data.split('\n')
             # for row in ctid_msisdn_data:
@@ -332,10 +345,12 @@ class Tlog:
             #     if row != "":
             #         self.packs_ctid_msisdn_data_list.append(row)
         
-        if pname == "GRIFF" or pname == "PACKS":
+        if pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY":
             for row in ctid_msisdn_data:
                 if row != "":
-                    if pname == "GRIFF":
+                    if pname == "ONMOPAY":
+                        ctid, msisdn = tuple(row.replace('"', '').split(","))
+                    elif pname == "GRIFF":
                         ctid, msisdn = tuple(row.replace('"', '').split(","))
                     elif pname == "PACKS":
                         ctid, msisdn = tuple(row.replace('"', '').split(","))
@@ -352,7 +367,8 @@ class Tlog:
     
     def ctid_based_tlog_fetch(self, pname, files, is_backup_files):
         try:
-            if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+            if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
+                or pname == "PACKS_EXTHIT" or pname == "ONMOPAY":
                 temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
                 
                 for ctid in temp_map:
@@ -421,8 +437,16 @@ class Tlog:
         tlogParser_object = TlogParser(self.initializedPath_object, self.outputDirectory_object,\
                                         self.validation_object, self.log_mode, self.oarm_uid,\
                                         self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict)
+        if pname == "ONMOPAY":
+            header = [
+                        "TIMESTAMP","StoreID","SessionID","UserID","AuthenticationMechanism","RemoteIP",\
+                        "UserAgent","DeviceIndex","CampaignSource","CampaignMedium","CampaignID","CampaignSessionID",\
+                        "ActivityType","Operator","CampaignIdentifier","Referrer","RequestOrigin","NetWorkType",\
+                        "Mode","AntiFraudScore","AntiFraudThreatFlags","BillingOption","X_Forwarded_For",\
+                        "X_Requested_With","ErrorCode","IsUserIDEncrypted","QualityCheckScore"
+                    ]
         
-        if pname == "GRIFF":
+        elif pname == "GRIFF":
             header = [
                         "TIMESTAMP","CTID","HOST","X_FORWARDED_FOR","THREAD_NAME","TOTAL_TIME","GRIFF_TIME",\
                         "EXT_TIME","STORENAME","SUB_CODE","GRIFF_ACTION","MSISDN","OLDMSISDN","UID","OLDUID",\
@@ -484,14 +508,27 @@ class Tlog:
         
         logging.info('process name: %s', pname)
         
-        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT":
+        if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
+            or pname == "PACKS_EXTHIT" or pname == "ONMOPAY":
             ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
              
             for ctid in ctid_map:
                 for data in data_list:
                     splitted_data = re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)', data)
                     
-                    if pname == "GRIFF":
+                    if pname == "ONMOPAY":
+                        if ctid == splitted_data[2].replace('"', '').strip():
+                            data_dict = {}
+                            for index, element in enumerate(splitted_data):
+                                data_dict[header[index]] = element.replace('"', '').replace("'", '"')
+            
+                            if data_dict["ActivityType"]:
+                                for activity in DaiusActivityType:
+                                    if activity.value == data_dict["ActivityType"]:
+                                        data_dict["ActivityType"] = f'{data_dict["ActivityType"]} ({activity.name})'
+                            self.ctid_data_dict[ctid].append(data_dict)
+                        
+                    elif pname == "GRIFF":
                         if ctid == splitted_data[1].replace('"', '').strip():
                             data_dict = {}
                             for index, element in enumerate(splitted_data):
@@ -574,7 +611,12 @@ class Tlog:
                 logging.info('prism daemon thread: %s', self.prism_daemon_tlog_thread_dict)
                     
                         
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            self.onmopay_tlog_dict = {"ONMOPAY_DAIUS_ACTIVITY": dict(self.ctid_data_dict)}
+            self.payment_data_dict_list.append(self.onmopay_tlog_dict)
+            logging.info('onmopay tlogs: %s', str(self.onmopay_tlog_dict).replace("'", '"'))
+            
+        elif pname == "GRIFF":
             # self.griff_tlog_dict = {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}
             self.griff_tlog_dict = {"GRIFF_TLOG": dict(self.ctid_data_dict)}
             self.payment_data_dict_list.append(self.griff_tlog_dict)
@@ -609,6 +651,12 @@ class Tlog:
             self.prism_daemon_tlog_dict = {"PRISM_DAEMON_TLOG": dict(self.msisdn_data_dict)}
             self.payment_data_dict_list.append(self.prism_daemon_tlog_dict)
             logging.info('prism billing tlogs: %s', str(self.prism_daemon_tlog_dict).replace("'", '"'))
+        
+        # parse tlog for error
+        if pname == "ONMOPAY":
+            if self.ctid_data_dict:
+                ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
+                tlogParser_object.parse_tlog(pname, self.ctid_data_dict, ctid_map)
         
         # parse tlog for error
         if pname == "GRIFF" or pname == "PACKS":

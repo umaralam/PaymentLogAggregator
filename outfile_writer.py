@@ -26,7 +26,13 @@ class FileWriter:
     
     def write_complete_thread_log(self, pname, tlog_thread, record, ctid, task_type, sub_type, input_tag):
         #write complete thread log
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            error_code = tlog_thread
+            RequestOrigin = task_type
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_onmopay")
+            thread_outfile = f"{process_folder}/{ctid}_paycore.log"
+        
+        elif pname == "GRIFF":
             process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")                
             thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_griff.log"
         
@@ -49,9 +55,12 @@ class FileWriter:
         try:
             with open(thread_outfile, "w") as write_file:
                 write_file.writelines(record)
-                if pname == "GRIFF" or pname == "PACKS":
-                    self.write_trimmed_thread_log(pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag)
-                
+                if pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY":
+                    if pname == "ONMOPAY":
+                        self.write_trimmed_thread_log(pname, process_folder, error_code, thread_outfile, ctid, RequestOrigin, sub_type, input_tag)
+                    else:
+                        self.write_trimmed_thread_log(pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag)
+                        
                 elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                     self.write_trimmed_thread_log(pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag)
                     
@@ -59,7 +68,13 @@ class FileWriter:
             logging.info(error)
                 
     def write_trimmed_thread_log(self, pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag):
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            error_code = tlog_thread
+            RequestOrigin = task_type
+            logging.info('request origin: %s', RequestOrigin)
+            trimmed_thread_outfile = f"{process_folder}/{ctid}_trimmed_paycore.log"
+            
+        elif pname == "GRIFF":
             trimmed_thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_trimmed_griff.log"
             
         elif pname == "PACKS":
@@ -72,7 +87,17 @@ class FileWriter:
             trimmed_thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_trimmed_prism_daemon.log"
         
         try:   
-            if pname == "GRIFF" or pname == "PACKS":
+            if pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY":
+                #set final index based on start of search string
+                if pname == "ONMOPAY":
+                    with open(thread_outfile, "r") as outFile:
+                        for i, line in enumerate(outFile):
+                            if re.search(r"{}".format(error_code), line):
+                                self.set_final_index(i + 10)
+                                if self.get_final_index() != 0:
+                                    self.set_initial_index(self.get_final_index() - 50)
+                                break
+                            
                 #set initial index based on start of search string
                 if pname == "GRIFF":
                     for gf_start_serach_string in Griff_St_SString:
@@ -89,6 +114,7 @@ class FileWriter:
                                     self.set_initial_index(i)
                                     break
                 
+                    
                 #set final index based on end of search string
                 if pname == "GRIFF":
                     for gf_end_serach_string in Griff_En_SString:
@@ -146,11 +172,23 @@ class FileWriter:
         """
         self.__initial_index = initial_index
     
+    def get_initial_index(self):
+        """
+        getting initial index from
+        """
+        return self.__initial_index
+    
     def set_final_index(self, final_index):
         """
         Setting initial index from
         """
         self.__final_index = final_index
+    
+    def get_final_index(self):
+        """
+        getting initial index from
+        """
+        return self.__final_index
                 
     def zipped_outfile(self):
         #zipping the out folder

@@ -36,20 +36,37 @@ class DaemonLogProcessor:
         #creating out file writter object for writting log to out file
         fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
         
-        if pname == "GRIFF" or pname == "PACKS":
+        if pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY":
+            if pname == "ONMOPAY":
+                error_code = tlog_thread
+                RequestOrigin = task_type
             #msisdn processing main file
             try:
                 self.reinitialize_constructor_parameter()
-                
+                if pname == "ONMOPAY":
+                    try:
+                        self.is_log_file = True
+                        self.dated_log_files(pname)
+                        # logging.info('paycore log file: %s', self.log_files)
+                    except KeyError as error:
+                        logging.info(error)
                 if pname == "GRIFF":
                     self.log_files.append(self.initializedPath_object.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"])
                 if pname == "PACKS":
                     self.log_files.append(self.initializedPath_object.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"])
                 
-                self.fetch_daemon_log(tlog_thread, self.log_files) 
+                if pname == "ONMOPAY":
+                    self.fetch_daemon_log(ctid, self.log_files)
+                else:
+                    self.fetch_daemon_log(tlog_thread, self.log_files)
+                    
                 
                 if self.issue_record:
-                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, self.issue_record, ctid, None, None, None)
+                    if pname == "ONMOPAY":
+                        fileWriter_object.write_complete_thread_log(pname, error_code, self.issue_record, ctid, RequestOrigin, None, None)
+                    else:
+                        fileWriter_object.write_complete_thread_log(pname, tlog_thread, self.issue_record, ctid, None, None, None)
+                        
             except KeyError as error:
                 logging.info(error)
             
@@ -270,7 +287,10 @@ class DaemonLogProcessor:
                         self.backup_log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_backup_log"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
                 
                 elif self.is_log_file:
-                    if pname == "GRIFF":
+                    if pname == "ONMOPAY":
+                        self.log_files.append(str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_allfile_log"]).replace("${shortdate}", f"{input_date_formatted}"))
+                        self.log_files.append(str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_serviceSpecificFile_log"]).replace("${shortdate}", f"{input_date_formatted}").replace("${aspnet-item:variable=ServiceId}", ""))
+                    elif pname == "GRIFF":
                         self.log_files.append(str(self.initializedPath_object.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).replace(".log", f"-{input_date_formatted}*.log"))
                     elif pname == "PACKS":
                         self.log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_APPENDER_PACKS.FILE_log"]).replace(".log", f"-{input_date_formatted}*.log"))

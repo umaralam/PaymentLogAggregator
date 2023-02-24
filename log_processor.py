@@ -22,16 +22,17 @@ class PROCESSOR:
         self.payment_data_dict_list = []
         self.payment_data_dict = {"PAYMENT_TRANSACTION_DATA": {f"{validation_object.fmsisdn}" : ""}}
         
-        #griff and packs tlog dictionary
+        #onmopay, griff, packs and prism tlog dictionary
+        self.onmopay_tlog_dict = {}
         self.griff_tlog_dict = {}
         self.packs_tlog_dict = {}
         self.griff_ext_hit_tlog_dict = {}
         self.packs_ext_hit_tlog_dict = {}
-        
-        self.prism_ctid = []
         self.prism_tomcat_tlog_dict = {}
         self.prism_daemon_tlog_dict = {}
         self.prism_smsd_tlog_dict = {}
+        
+        self.prism_ctid = []
         self.prism_daemon_tlog_thread_dict = defaultdict(list)
         self.prism_tomcat_tlog_thread_dict = defaultdict(list)
         self.prism_tomcat_handler_generic_http_req_resp_dict = {}
@@ -50,7 +51,7 @@ class PROCESSOR:
     def process(self):
         tlogProcessor_object = TlogProcessor(self.initializedPath_object, self.outputDirectory_object,\
                                         self.validation_object, self.log_mode, self.config,\
-                                        self.payment_data_dict_list, self.payment_data_dict,\
+                                        self.payment_data_dict_list, self.payment_data_dict, self.onmopay_tlog_dict,\
                                         self.griff_tlog_dict, self.packs_tlog_dict,\
                                         self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                                         self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
@@ -66,7 +67,19 @@ class PROCESSOR:
         
         
         for pname in self.config[self.hostname]:
-            if pname == 'GRIFF':
+            if pname == "ONMOPAY":
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_onmopay")
+                self.remove_old_process_folder(pname, folder)
+                
+                try:
+                    if self.initializedPath_object.onmopay_consumer_log_path_dict["onmopay_consumer_NovaLogFileAppender_log"]:                
+                        logging.debug('%s onmopay consumer log path exists', pname)
+                        if tlogProcessor_object.process_tlog("ONMOPAY"):
+                            pass
+                except KeyError as error:
+                    logging.exception(error)
+                
+            elif pname == 'GRIFF':
                 folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
                 self.remove_old_process_folder(pname, folder)
                 

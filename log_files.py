@@ -34,7 +34,32 @@ class LogFileFinder:
         #re-initializing constructor parameters
         self.constructor_paramter_reinitialize()
         
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            splitted_tlog_path = str(self.initializedPath_object.onmopay_consumer_log_path_dict["onmopay_consumer_NovaLogFileAppender_log"])\
+                                    .split("/")[0:-1]
+                                                    
+            for i in range(1, len(splitted_tlog_path)):
+                self.tlog_dir += f"/{splitted_tlog_path[i]}"
+            
+            path = Path(rf"{self.tlog_dir}")
+        
+            self.input_date = self.date_range_list_utc(int(self.s_date.timestamp()), int(self.e_date.timestamp()))
+            
+            dated_tlog_files_list = []
+            for idate in self.input_date:
+                input_date_formatted = datetime.strftime(idate, "%Y%m%d")
+                logging.info('utc search date for daius file: %s', input_date_formatted)
+                dated_tlog_files = [p for p in path.glob(f"daiusactivities-*{input_date_formatted}*")]
+                if dated_tlog_files:
+                    dated_tlog_files_list.append(dated_tlog_files)
+            
+            if dated_tlog_files_list:
+                for files in dated_tlog_files_list:
+                    for file in files:
+                        self.tlog_files.append(str(file))
+                logging.info('tlog files: %s', self.tlog_files)
+        
+        elif pname == "GRIFF":
             #current tlog file
             self.tlog_files.append(self.initializedPath_object.griff_tomcat_log_path_dict["griff_TLOG_log"])
             
@@ -376,6 +401,16 @@ class LogFileFinder:
         # Return list of datetime.date objects between start_date and end_date (inclusive).
         date_list = []
         curr_date = start_date
+        while curr_date <= end_date:
+            date_list.append(curr_date)
+            curr_date += timedelta(days=1)
+        return date_list
+    
+    def date_range_list_utc(self, start_date_utc, end_date_utc):
+        # Return list of datetime.date objects between start_date and end_date (inclusive).
+        date_list = []
+        curr_date = datetime.utcfromtimestamp(start_date_utc)
+        end_date = datetime.utcfromtimestamp(end_date_utc)
         while curr_date <= end_date:
             date_list.append(curr_date)
             curr_date += timedelta(days=1)
