@@ -17,7 +17,7 @@ class Tlog:
     def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode,\
                     payment_data_dict_list, payment_data_dict, config, onmopay_tlog_dict,\
                     onmopay_cg_redirection_tlog_dict, onmopay_request_counter_tlog_dict,\
-                    onmopay_paycore_plog_dict, griff_tlog_dict,\
+                    onmopay_paycore_plog_dict, onmopay_paycore_webapi_plog_dict, griff_tlog_dict,\
                     packs_tlog_dict, griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict, prism_daemon_tlog_thread_dict,\
                     prism_tomcat_tlog_thread_dict, prism_tomcat_handler_generic_http_req_resp_dict,\
@@ -78,6 +78,7 @@ class Tlog:
         self.onmopay_cg_redirection_tlog_dict = onmopay_cg_redirection_tlog_dict
         self.onmopay_request_counter_tlog_dict = onmopay_request_counter_tlog_dict
         self.onmopay_paycore_plog_dict = onmopay_paycore_plog_dict
+        self.onmopay_paycore_webapi_plog_dict = onmopay_paycore_webapi_plog_dict
         
         self.griff_tlog_dict = griff_tlog_dict
         self.griff_ext_hit_tlog_dict = griff_ext_hit_tlog_dict
@@ -127,7 +128,7 @@ class Tlog:
             self.constructor_ctid_msisdn_paramter_reinitialization()
         
         elif pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
-            or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT"\
+            or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT"\
             or pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP"\
             or pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP"\
             or pname == "PRISM_TOMCAT_REQ_RESP" or pname == "PRISM_TOMCAT_CALLBACK_V2_REQ_RESP"\
@@ -148,7 +149,8 @@ class Tlog:
         if self.tlog_files:
             if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
                 or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION"\
-                or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG":
+                or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
+                or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
                 for file in self.tlog_files:
                     # function call
                     self.msisdn_ctid_map(pname, file, self.is_backup_file)
@@ -204,7 +206,8 @@ class Tlog:
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
             or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION"\
-            or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG":
+            or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
+            or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
             if self.ctid_msisdn_map_dict and (self.tlog_files_with_ctid_msisdn\
                                             or self.tlog_backup_files_with_ctid_msisdn):
                 if self.tlog_files_with_ctid_msisdn:
@@ -232,7 +235,8 @@ class Tlog:
                 self.perf_data_mapping(pname, data_list)
             elif pname == "PRISM_SMSD":
                 self.sms_data_header_mapping(pname, data_list)
-            elif pname == "ONMOPAY_CG_REDIRECTION" or pname == "ONMOPAY_PAYCORE_PERF_LOG":
+            elif pname == "ONMOPAY_CG_REDIRECTION" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
+                or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
                 self.onmopay_data_mapping(pname, data_list)
             else:
                 self.tlog_record_header_mapping(pname, data_list)
@@ -332,6 +336,18 @@ class Tlog:
                                 logging.info('normal ctid: %s and row: %s', ctid, row)
                                 self.tlog_files_with_ctid_msisdn.append(file)
             
+            elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+                for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
+                    try:
+                        ctid_data = subprocess.check_output(f"grep -a {ctid} {file}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                        
+                        if ctid_data:
+                            logging.info('ctid file is: %s', file)
+                            self.tlog_files_with_ctid_msisdn.append(file)
+                    except subprocess.CalledProcessError as error:
+                        logging.info(error)
+                    
+            
             elif pname == "GRIFF":
                 ctid_mdn_data = subprocess.check_output(f"grep -a {self.validation_object.fmsisdn} {file} | cut -d ',' -f 2,12", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                 if ctid_mdn_data:
@@ -408,7 +424,8 @@ class Tlog:
         try:
             if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
                 or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION"\
-                or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG":
+                or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
+                or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
                 temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
                 
                 for ctid in temp_map:
@@ -952,6 +969,15 @@ class Tlog:
                         self.ctid_data_dict[ctid].append(data)
             self.onmopay_paycore_plog_dict = {"ONMOPAY_PAYCORE_PERF_LOG": dict(self.ctid_data_dict)}
             self.payment_data_dict_list.append(self.onmopay_paycore_plog_dict)
+        
+        elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+            ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
+            for ctid in ctid_map:
+                for data in data_list:
+                    if ctid in data:
+                        self.ctid_data_dict[ctid].append(data)
+            self.onmopay_paycore_webapi_plog_dict = {"ONMOPAY_PAYCORE_API_PERF_LOG": dict(self.ctid_data_dict)}
+            self.payment_data_dict_list.append(self.onmopay_paycore_webapi_plog_dict)
             
     
     def access_data_mapping(self, pname):

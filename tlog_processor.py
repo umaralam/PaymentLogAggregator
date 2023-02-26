@@ -8,7 +8,8 @@ class TlogProcessor:
     def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode, config,\
                     payment_data_dict_list, payment_data_dict, onmopay_tlog_dict,\
                     onmopay_cg_redirection_tlog_dict, onmopay_request_counter_tlog_dict,\
-                    onmopay_paycore_plog_dict, griff_tlog_dict, packs_tlog_dict,\
+                    onmopay_paycore_plog_dict, onmopay_paycore_webapi_plog_dict,\
+                    griff_tlog_dict, packs_tlog_dict,\
                     griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict,\
                     prism_daemon_tlog_thread_dict, prism_tomcat_tlog_thread_dict,\
@@ -33,6 +34,7 @@ class TlogProcessor:
         self.onmopay_cg_redirection_tlog_dict = onmopay_cg_redirection_tlog_dict
         self.onmopay_request_counter_tlog_dict = onmopay_request_counter_tlog_dict
         self.onmopay_paycore_plog_dict = onmopay_paycore_plog_dict
+        self.onmopay_paycore_webapi_plog_dict = onmopay_paycore_webapi_plog_dict
         
         self.griff_tlog_dict = griff_tlog_dict
         self.packs_tlog_dict = packs_tlog_dict
@@ -67,7 +69,7 @@ class TlogProcessor:
                             self.log_mode, self.payment_data_dict_list, self.payment_data_dict, self.config,\
                             self.onmopay_tlog_dict, self.onmopay_cg_redirection_tlog_dict,\
                             self.onmopay_request_counter_tlog_dict, self.onmopay_paycore_plog_dict,\
-                            self.griff_tlog_dict, self.packs_tlog_dict,\
+                            self.onmopay_paycore_webapi_plog_dict, self.griff_tlog_dict, self.packs_tlog_dict,\
                             self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                             self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
                             self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict,\
@@ -108,6 +110,14 @@ class TlogProcessor:
                     logging.debug('%s paycore plog path exists', pname)
                     
                     tlog_object.get_tlog("ONMOPAY_PAYCORE_PERF_LOG")
+            except KeyError as error:
+                logging.exception(error)
+            
+            try:
+                if self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_performance-file_log"]:
+                    logging.debug('%s paycore web api plog path exists', pname)
+                    
+                    tlog_object.get_tlog("ONMOPAY_PAYCORE_API_PERF_LOG")
             except KeyError as error:
                 logging.exception(error)
                     

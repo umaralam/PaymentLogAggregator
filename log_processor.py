@@ -27,10 +27,14 @@ class PROCESSOR:
         self.onmopay_cg_redirection_tlog_dict = {}
         self.onmopay_request_counter_tlog_dict = {}
         self.onmopay_paycore_plog_dict = {}
+        self.onmopay_paycore_webapi_plog_dict = {}
+        
         self.griff_tlog_dict = {}
-        self.packs_tlog_dict = {}
         self.griff_ext_hit_tlog_dict = {}
+        
+        self.packs_tlog_dict = {}
         self.packs_ext_hit_tlog_dict = {}
+        
         self.prism_tomcat_tlog_dict = {}
         self.prism_daemon_tlog_dict = {}
         self.prism_smsd_tlog_dict = {}
@@ -56,7 +60,8 @@ class PROCESSOR:
                                         self.validation_object, self.log_mode, self.config,\
                                         self.payment_data_dict_list, self.payment_data_dict, self.onmopay_tlog_dict,\
                                         self.onmopay_cg_redirection_tlog_dict, self.onmopay_request_counter_tlog_dict,\
-                                        self.onmopay_paycore_plog_dict, self.griff_tlog_dict, self.packs_tlog_dict,\
+                                        self.onmopay_paycore_plog_dict, self.onmopay_paycore_webapi_plog_dict,\
+                                        self.griff_tlog_dict, self.packs_tlog_dict,\
                                         self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                                         self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
                                         self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict,\

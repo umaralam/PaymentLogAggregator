@@ -36,7 +36,7 @@ class LogFileFinder:
         self.constructor_paramter_reinitialize()
         
         if pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION" or pname == "ONMOPAY_REQUEST_COUNTER"\
-            or pname == "ONMOPAY_PAYCORE_PERF_LOG":
+            or pname == "ONMOPAY_PAYCORE_PERF_LOG" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
             if pname == "ONMOPAY":
                 splitted_tlog_path = str(self.initializedPath_object.onmopay_consumer_log_path_dict["onmopay_consumer_NovaLogFileAppender_log"])\
                                     .split("/")[0:-1]
@@ -49,6 +49,9 @@ class LogFileFinder:
             elif pname == "ONMOPAY_PAYCORE_PERF_LOG":
                 splitted_tlog_path = str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_performance-file_log"])\
                                     .split("/")[0:-1]
+            elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+                splitted_tlog_path = str(self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_performance-file_log"])\
+                                    .split("/")[0:-1]
                                                     
             for i in range(1, len(splitted_tlog_path)):
                 self.tlog_dir += f"/{splitted_tlog_path[i]}"
@@ -59,7 +62,7 @@ class LogFileFinder:
             
             dated_tlog_files_list = []
             for idate in self.input_date:
-                if pname == "ONMOPAY_PAYCORE_PERF_LOG":
+                if pname == "ONMOPAY_PAYCORE_PERF_LOG" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
                     input_date_formatted = datetime.strftime(idate, "%Y-%m-%d")
                 else:
                     input_date_formatted = datetime.strftime(idate, "%Y%m%d")
@@ -73,6 +76,8 @@ class LogFileFinder:
                     dated_tlog_files = [p for p in path.glob(f"{self.hostname}-RequestCounterLog-*{input_date_formatted}*")]
                 elif pname == "ONMOPAY_PAYCORE_PERF_LOG":
                     dated_tlog_files = [p for p in path.glob(f"{self.hostname}-{input_date_formatted}-plog*")]
+                elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+                    dated_tlog_files = [p for p in path.glob(f"{self.hostname}-{input_date_formatted}-webapi-plog*")]
                 
                 if dated_tlog_files:
                     dated_tlog_files_list.append(dated_tlog_files)
