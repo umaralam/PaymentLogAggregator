@@ -20,7 +20,8 @@ class DaemonLogProcessor:
         self.oarm_uid = oarm_uid
         
         self.log_files = []
-        self.csv_files = []
+        self.Errorcsv_files = []
+        self.Errorlog_files = []
         self.backup_log_files = []
         
         self.start_date = validation_object.start_date
@@ -37,7 +38,8 @@ class DaemonLogProcessor:
         self.e_date = datetime.strptime(datetime.strftime(self.end_date, "%Y%m%d"), "%Y%m%d")
         self.issue_record = ""
         self.error_code = ""
-        self.is_error_in_csv = False
+        self.is_error_in_Errorcsv = False
+        self.is_error_in_Errorlog = False
         
         self.hostname = socket.gethostname()
         self.onmopay_out_folder = False
@@ -59,7 +61,7 @@ class DaemonLogProcessor:
                             self.is_log_file = True
                             self.dated_log_files(pname)
                         else:
-                            self.check_error_in_csv(pname, ctid)
+                            self.check_error_in_csv_log(pname, ctid)
                         # logging.info('paycore log file: %s', self.log_files)
                     except KeyError as error:
                         logging.info(error)
@@ -69,7 +71,7 @@ class DaemonLogProcessor:
                     self.log_files.append(self.initializedPath_object.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"])
                 
                 if pname == "ONMOPAY":
-                    if self.error_code or self.is_error_in_csv:
+                    if self.error_code or self.is_error_in_Errorcsv:
                         self.fetch_daemon_log(ctid, self.log_files)
                 else:
                     self.fetch_daemon_log(tlog_thread, self.log_files)
@@ -84,7 +86,7 @@ class DaemonLogProcessor:
                         logging.info('%s not found in debug log', ctid)
                     else:
                         logging.info('%s not found in debug log', tlog_thread)
-                              
+                    
             except KeyError as error:
                 logging.info(error)
             
@@ -165,7 +167,10 @@ class DaemonLogProcessor:
                             fileWriter_object.write_complete_thread_log(pname, tlog_thread, self.issue_record, ctid, None, None, None)
             except KeyError as error:
                 logging.info(error)
-                
+        
+        elif pname == "ONMOPAY_PAY_API":
+            self.check_pay_api_errorlog(pname, ctid)
+        
         elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
             #msisdn log processing
             try:
@@ -343,29 +348,29 @@ class DaemonLogProcessor:
         except KeyError as error:
             logging.info(error)
     
-    def check_error_in_csv(self, pname, ctid):
+    def check_error_in_csv_log(self, pname, ctid):
         #check if sessionId present in error csv file
         try:            
             #method call to date range list
             self.input_date = self.date_range_list(self.s_date, self.e_date)
             
             for date in self.input_date:
-                input_date_formatted = datetime.strftime(date, "%Y%m%d")
-                self.csv_files.append(str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_errorCSV-file_log"]).replace("${date:format=yyyyMMdd}", f"{input_date_formatted}"))
+                input_date_formatted_Errorcsv = datetime.strftime(date, "%Y%m%d")
+                self.Errorcsv_files.append(str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_errorCSV-file_log"]).replace("${date:format=yyyyMMdd}", f"{input_date_formatted_Errorcsv}"))
             
-            if self.csv_files:
-                for file in self.csv_files:
+            if self.Errorcsv_files:
+                for file in self.Errorcsv_files:
                     try:
                         # logging.info('tlog thread is: %s and log_file is: %s', ctid, file)
-                        ctid_log = subprocess.check_output(f"grep -a {ctid} {file}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
-                        if ctid_log:
+                        ctid_Errorcsv = subprocess.check_output(f"grep -a {ctid} {file}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                        if ctid_Errorcsv:
                             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_onmopay")
                             if not self.onmopay_out_folder:
                                 self.create_process_folder(pname, folder)
-                            splitted_record = str(ctid_log).split(",")
+                            splitted_record = str(ctid_Errorcsv).split(",")
                             logging.info('splitted record=%s', splitted_record[11])
                             self.error_code = splitted_record[11]
-                            self.is_error_in_csv = True
+                            self.is_error_in_Errorcsv = True
                             logging.info('error code=%s', self.error_code)
                             break
                     except subprocess.CalledProcessError as error:
@@ -376,6 +381,37 @@ class DaemonLogProcessor:
                 input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
                 self.log_files.append(str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_allfile_log"]).replace("${shortdate}", f"{input_date_formatted}"))
                 self.log_files.append(str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_serviceSpecificFile_log"]).replace("${shortdate}", f"{input_date_formatted}").replace("${aspnet-item:variable=ServiceId}", "*"))
+        
+        except KeyError as error:
+            logging.info(error)
+    
+    def check_pay_api_errorlog(self, pname, ctid):
+        #check if sessionId present in error csv file
+        try:            
+            #method call to date range list
+            self.input_date = self.date_range_list(self.s_date, self.e_date)
+            
+            for date in self.input_date:
+                input_date_formatted_Errorlog = datetime.strftime(date, "%Y-%m-%d")
+                self.Errorlog_files.append(str(self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_errorfile_log"]).replace("${shortdate}", f"{input_date_formatted_Errorlog}"))
+            
+            if self.Errorlog_files:
+                for file in self.Errorlog_files:
+                    try:
+                        search_string = "|ERROR|"
+                        # logging.info('tlog thread is: %s and log_file is: %s', ctid, file)
+                        ctid_Errorlog = subprocess.check_output(f"grep -a {ctid} {file} | grep '{search_string}'", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                        if ctid_Errorlog:
+                            folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_onmopay")
+                            if not self.onmopay_out_folder:
+                                self.create_process_folder(pname, folder)
+                            
+                            fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
+                            fileWriter_object.write_error_log(folder, ctid, ctid_Errorlog)
+                    except subprocess.CalledProcessError as error:
+                        logging.info('eigther %s does not exists or %s could not be found', file, ctid)
+                        logging.info(error)
+        
         except KeyError as error:
             logging.info(error)
         
@@ -417,6 +453,7 @@ class DaemonLogProcessor:
 
         # create a new folder
         os.makedirs(folder)
+        self.set_process_out_folder(True)
             
     def set_process_out_folder(self, is_true):
         self.onmopay_out_folder = is_true
@@ -425,7 +462,7 @@ class DaemonLogProcessor:
         self.input_date = []
         self.log_files = []
         self.backup_log_files = []
-        self.csv_files = []
+        self.Errorcsv_files = []
         self.issue_record = ""
         self.error_code = ""
         self.is_msisdn_file = False
@@ -433,6 +470,7 @@ class DaemonLogProcessor:
         self.is_backup_file = False
         self.is_log_file = False
         self.is_backup_root_file = False
-        self.is_error_in_csv = False
+        self.is_error_in_Errorcsv = False
+        self.is_error_in_Errorlog = False
         
         

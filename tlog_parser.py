@@ -76,7 +76,7 @@ class TlogParser:
                                     #fetch daemon log
                                     logging.info('%s is having an issue: %s', tlog_dict["SessionID"], tlog_dict["ErrorCode"])
                                     daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["ErrorCode"], ctid, tlog_dict["RequestOrigin"], None, None)
-                                    
+                                
                             elif pname == "GRIFF" and tlog_dict:
                                 out = str(tlog_dict["OUT"]).split(",")
                                 logging.info('griff out: %s', out)
@@ -106,7 +106,6 @@ class TlogParser:
                                     logging.info('issue thread: %s', tlog_dict["THREAD_NAME"])
                                     daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"], ctid, None, None, None)
                                 
-                                      
                                 
                         elif self.log_mode == "all":
                             #issue thread found so create griff folder for the 1st time
@@ -117,9 +116,16 @@ class TlogParser:
                     else:
                         if self.log_mode == "error":
                             if pname == "ONMOPAY":
-                                #will be checking for error csv
-                                daemonLogProcessor_object.process_daemon_log(pname, None, ctid, tlog_dict["RequestOrigin"], None, None)
-            
+                                #will be checking for paycore error csv
+                                daemonLogProcessor_object.process_daemon_log(pname, None, ctid, tlog_dict["RequestOrigin"], None, None)    
+                
+                for ctid in ctid_map:
+                    if self.log_mode == "error":
+                        pname = "ONMOPAY_PAY_API"
+                        logging.info('Processing for %s error log', pname)
+                        #will be checking for pay core api error log
+                        daemonLogProcessor_object.process_daemon_log(pname, None, ctid, None, None, None)  
+                
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                 if pname == "PRISM_TOMCAT":
                     thread_list = self.prism_tomcat_tlog_thread_dict["PRISM_TOMCAT_THREAD"]

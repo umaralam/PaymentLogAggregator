@@ -25,6 +25,19 @@ class FileWriter:
         with open(f"{self.outputDirectory_object}/{self.hostname}_paymentTransactionData.json", "w") as outfile:
             json.dump(payment_data_dict, outfile, indent=4)
     
+    def write_error_log(self, process_folder, ctid, ctid_Errorlog):
+        thread_outfile = f"{process_folder}/{ctid}_pay_api.log"
+        index = 1
+        try:
+            with open(thread_outfile, "a") as write_file:
+                write_file.writelines(f"PAY_API_LOG: {index}\n")
+                write_file.writelines('==================\n')
+                write_file.writelines(ctid_Errorlog)
+                write_file.writelines('\n')
+                index += 1
+        except FileNotFoundError as error:
+            logging.info(error)
+        
     def write_complete_thread_log(self, pname, tlog_thread, record, ctid, task_type, sub_type, input_tag):
         #write complete thread log
         if pname == "ONMOPAY":
