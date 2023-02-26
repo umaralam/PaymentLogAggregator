@@ -37,6 +37,10 @@ class Main:
             logging.info('removing old modified_nlog.config')
             os.remove('modified_nlog.config')
         
+        if os.path.exists(f'out/{hostname}_paymentTransactionData.json'):
+            logging.info(f'out/{hostname}_paymentTransactionData.json')
+            os.remove(f'out/{hostname}_paymentTransactionData.json')
+        
         if validation_object.is_input_valid:
             data = Path(f"{hostname}.json").read_text()
             config = json.loads(data)

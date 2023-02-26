@@ -214,8 +214,11 @@ class Initializer:
                     logging.warning('any of the %s path not initialized', i)
                 except Exception as error:
                     logging.warning(error)
+                    
+            logging.info('\n')
+            logging.info('log mode: %s', self.log_mode)     
             
-            logging.info('log mode: %s', self.log_mode)      
+            #processor is called
             processor_object = PROCESSOR(initializedPath_object, self.outputDirectory_object, self.validation_object, self.log_mode, self.oarm_uid, self.config)
             processor_object.process()
                 

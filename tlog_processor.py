@@ -6,8 +6,9 @@ class TlogProcessor:
     Parse the tlog for various conditions
     """
     def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode, config,\
-                    payment_data_dict_list, payment_data_dict,\
-                    griff_tlog_dict, packs_tlog_dict,\
+                    payment_data_dict_list, payment_data_dict, onmopay_tlog_dict,\
+                    onmopay_cg_redirection_tlog_dict, onmopay_request_counter_tlog_dict,\
+                    onmopay_paycore_plog_dict, griff_tlog_dict, packs_tlog_dict,\
                     griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict,\
                     prism_daemon_tlog_thread_dict, prism_tomcat_tlog_thread_dict,\
@@ -27,6 +28,12 @@ class TlogProcessor:
         self.config = config
         self.payment_data_dict_list = payment_data_dict_list
         self.payment_data_dict = payment_data_dict
+        
+        self.onmopay_tlog_dict = onmopay_tlog_dict
+        self.onmopay_cg_redirection_tlog_dict = onmopay_cg_redirection_tlog_dict
+        self.onmopay_request_counter_tlog_dict = onmopay_request_counter_tlog_dict
+        self.onmopay_paycore_plog_dict = onmopay_paycore_plog_dict
+        
         self.griff_tlog_dict = griff_tlog_dict
         self.packs_tlog_dict = packs_tlog_dict
         self.griff_ext_hit_tlog_dict = griff_ext_hit_tlog_dict
@@ -58,6 +65,8 @@ class TlogProcessor:
         #tlog object
         tlog_object = Tlog(self.initializedPath_object, self.outputDirectory_object, self.validation_object,\
                             self.log_mode, self.payment_data_dict_list, self.payment_data_dict, self.config,\
+                            self.onmopay_tlog_dict, self.onmopay_cg_redirection_tlog_dict,\
+                            self.onmopay_request_counter_tlog_dict, self.onmopay_paycore_plog_dict,\
                             self.griff_tlog_dict, self.packs_tlog_dict,\
                             self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                             self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
@@ -74,8 +83,35 @@ class TlogProcessor:
         # tlog_object.get_tlog(pname)
         
         # ctid_msisdn_data, tlog_dict = tlog_object.get_tomcat_tlog(pname)
-        
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            #fetching onmopay access and tlog
+            self.onmopay_tlog_dict = tlog_object.get_tlog(pname)
+            
+            try:
+                if self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_cgredirectionCSV-file_log"]:
+                    logging.debug('%s paycore cgredirection csv path exists', pname)
+                    
+                    tlog_object.get_tlog("ONMOPAY_CG_REDIRECTION")
+            except KeyError as error:
+                logging.exception(error)
+            
+            try:
+                if self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_requestCounterCsvFile_log"]:
+                    logging.debug('%s paycore request counter csv path exists', pname)
+                    
+                    tlog_object.get_tlog("ONMOPAY_REQUEST_COUNTER")
+            except KeyError as error:
+                logging.exception(error)
+            
+            try:
+                if self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_performance-file_log"]:
+                    logging.debug('%s paycore plog path exists', pname)
+                    
+                    tlog_object.get_tlog("ONMOPAY_PAYCORE_PERF_LOG")
+            except KeyError as error:
+                logging.exception(error)
+                    
+        elif pname == "GRIFF":
             #fetching griff access and tlog
             # tlog_object.get_tlog(pname)
             self.griff_tlog_dict = tlog_object.get_tlog(pname)

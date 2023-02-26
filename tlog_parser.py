@@ -26,6 +26,7 @@ class TlogParser:
         self.hostname = socket.gethostname()
         
         #out folder parameters
+        self.onmopay_out_folder = False
         self.griff_out_folder = False
         self.packs_out_folder = False
         self.prism_tomcat_out_folder = False
@@ -44,7 +45,9 @@ class TlogParser:
         """
         self.reinitialize_constructor_parameters()
         
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_onmopay")
+        elif pname == "GRIFF":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
         elif pname == "PACKS":
             folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")
@@ -60,11 +63,21 @@ class TlogParser:
                                                         self.validation_object, self.oarm_uid)
         #processing tlog based on different key in the tlog        
         try:
-            if (pname == "GRIFF" or pname == "PACKS") and ctid_map != None:
+            if (pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY") and ctid_map != None:
                 for ctid in ctid_map:
                     for tlog_dict in tlog_header_data_dict[ctid]:
                         if self.log_mode == "error":
-                            if pname == "GRIFF" and tlog_dict:
+                            if pname == "ONMOPAY":
+                                #empty check
+                                if tlog_dict["ErrorCode"]:
+                                    #issue thread found so create griff folder for the 1st time
+                                    if not self.onmopay_out_folder:
+                                        self.create_process_folder(pname, folder)
+                                    #fetch daemon log
+                                    logging.info('%s is having an issue: %s', tlog_dict["SessionID"], tlog_dict["ErrorCode"])
+                                    daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["ErrorCode"], ctid, tlog_dict["RequestOrigin"], None, None)
+                                    
+                            elif pname == "GRIFF" and tlog_dict:
                                 out = str(tlog_dict["OUT"]).split(",")
                                 logging.info('griff out: %s', out)
                                 msg = "CG is not available"
@@ -101,6 +114,11 @@ class TlogParser:
                                 self.create_process_folder(pname, folder)
                                  
                             daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"], ctid, None, None, None)
+                    else:
+                        if self.log_mode == "error":
+                            if pname == "ONMOPAY":
+                                #will be checking for error csv
+                                daemonLogProcessor_object.process_daemon_log(pname, None, ctid, tlog_dict["RequestOrigin"], None, None)
             
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                 if pname == "PRISM_TOMCAT":
@@ -208,7 +226,9 @@ class TlogParser:
     #         logging.info('%s out folder does not exists: %s', pname, error)
     
     def set_process_out_folder(self, pname, is_true):
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            self.onmopay_out_folder = is_true
+        elif pname == "GRIFF":
             self.griff_out_folder = is_true
         elif pname == "PACKS":
             self.packs_out_folder = is_true
