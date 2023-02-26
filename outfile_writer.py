@@ -20,6 +20,7 @@ class FileWriter:
         self.__final_index = 0 
         
     def write_json_tlog_data(self, payment_data_dict):
+                
         #dumping payment transaction data
         with open(f"{self.outputDirectory_object}/{self.hostname}_paymentTransactionData.json", "w") as outfile:
             json.dump(payment_data_dict, outfile, indent=4)

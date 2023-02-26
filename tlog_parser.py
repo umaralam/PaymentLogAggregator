@@ -71,7 +71,7 @@ class TlogParser:
                                 #empty check
                                 if tlog_dict["ErrorCode"]:
                                     #issue thread found so create griff folder for the 1st time
-                                    if not self.griff_out_folder:
+                                    if not self.onmopay_out_folder:
                                         self.create_process_folder(pname, folder)
                                     #fetch daemon log
                                     logging.info('%s is having an issue: %s', tlog_dict["SessionID"], tlog_dict["ErrorCode"])
@@ -114,6 +114,11 @@ class TlogParser:
                                 self.create_process_folder(pname, folder)
                                  
                             daemonLogProcessor_object.process_daemon_log(pname, tlog_dict["THREAD_NAME"], ctid, None, None, None)
+                    else:
+                        if self.log_mode == "error":
+                            if pname == "ONMOPAY":
+                                #will be checking for error csv
+                                daemonLogProcessor_object.process_daemon_log(pname, None, ctid, tlog_dict["RequestOrigin"], None, None)
             
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                 if pname == "PRISM_TOMCAT":
