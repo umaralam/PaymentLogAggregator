@@ -21,7 +21,9 @@ class LogPathFinder():
         
         #onmopay processes process conf path
         self.onmopay_consumer_process_home_dir = "onmopay_consumer_process_home_dir"
+        self.onmopay_paycore_process_access_log = "onmopay_paycore_process_access_log"
         self.onmopay_paycore_process_home_dir = "onmopay_paycore_process_home_dir"
+        self.onmopay_paycore_webapi_process_access_log = "onmopay_paycore_webapi_process_access_log"
         self.onmopay_paycore_webapi_process_home_dir = "onmopay_paycore_webapi_process_home_dir"
         self.onmopay_callback_delivery_process_home_dir = "onmopay_callback_delivery_process_home_dir"
         self.onmopay_failed_logprocessor_process_home_dir = "onmopay_failed_logprocessor_process_home_dir"
@@ -425,6 +427,21 @@ class LogPathFinder():
         Logger reference call to appender
         """
         try:
+            if pname == "PAYCORE_SERVICE" or pname == "PAYCORE_WEBAPI_SERVICE":
+                # logging.info('log4j path: %s', log4j2_path)
+                with open(log4j2_path, 'r') as file:
+                    # Read the entire contents of the file as a string
+                    file_contents = file.read()
+                root = ET.fromstring(file_contents)
+                # Find the target element with name="w3c-file"
+                target_elem = root.find('.//{http://www.nlog-project.org/schemas/NLog.xsd}target[@name="w3c-file"]')
+                # Retrieve the filename attribute value
+                filename = target_elem.get('filename')
+                if pname == "PAYCORE_SERVICE":
+                    self.onmopay_paycore_log_path_dict[self.onmopay_paycore_process_access_log] = str(filename).replace("${hostname}", self.hostname)
+                elif pname == "PAYCORE_WEBAPI_SERVICE":
+                    self.onmopay_paycoreWebApi_log_path_dict[self.onmopay_paycore_webapi_process_access_log] = str(filename).replace("${hostname}", self.hostname)
+                    
             if pname == "CONSUMER_SERVICE" or pname == "PAYCORE_SERVICE"\
                 or pname == "PAYCORE_WEBAPI_SERVICE" or pname == "CALLBACK_DELIVERY_SERVICE"\
                 or pname == "FAILED_LOG_PROCESSOR_SERVICE":               

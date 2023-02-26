@@ -17,6 +17,7 @@ class LogFileFinder:
         self.end_date = validation_object.end_date
         
         self.access_log_files = []
+        self.access_dir = ""
         
         self.tlog_files = []
         self.tlog_dir = ""
@@ -380,13 +381,19 @@ class LogFileFinder:
                     
         return self.tlog_backup_files
     
-    def get_tomcat_access_files(self, pname):
+    def get_access_files(self, pname):
         #re-initializing constructor parameters
         self.constructor_paramter_reinitialize()
         
         hostname = socket.gethostname()
         
         try:
+            if pname == "ONMOPAY":
+                splitted_tlog_path = str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_process_access_log"])\
+                                    .split("/")[0:-1]
+                for i in range(1, len(splitted_tlog_path)):
+                    self.access_dir += f"/{splitted_tlog_path[i]}"
+                    access_log_path = self.access_dir
             if pname == "GRIFF":
                 access_log_prefix = self.config[hostname]["GRIFF"]["GRIFF_TOMCAT"]["ACCESS_LOG_PREFIX"]
                 access_log_suffix = self.config[hostname]["GRIFF"]["GRIFF_TOMCAT"]["ACCESS_LOG_SUFFIX"]
@@ -408,18 +415,25 @@ class LogFileFinder:
         path = Path(rf"{access_log_path}")
         
         #method call to date range list
-        self.input_date = self.date_range_list(self.s_date, self.e_date)
+        if pname == "ONMOPAY":
+            self.input_date = self.date_range_list_utc(int(self.s_date.timestamp()), int(self.e_date.timestamp()))
+        else:
+            self.input_date = self.date_range_list(self.s_date, self.e_date)
         
         for date in self.input_date:
             # logging.info('search date is: %s', datetime.strftime(date, "%Y-%m-%d"))
-            input_date_formatted = datetime.strftime(date, "%Y-%m-%d")            
+            input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
             
-            #input dated access file in the access log path
-            
-            dated_access_files = [p for p in path.glob(f"{access_log_prefix}.{input_date_formatted}{access_log_suffix}")]
+            if pname == "ONMOPAY":           
+                dated_access_files = [p for p in path.glob(f"{self.hostname}-{input_date_formatted}-httprequests-w3c*")]
+            else:
+                dated_access_files = [p for p in path.glob(f"{access_log_prefix}.{input_date_formatted}{access_log_suffix}")]
                         
             if bool(dated_access_files):
-                logging.info(f"{access_log_prefix}.{input_date_formatted}{access_log_suffix} file present")        
+                if pname == "ONMOPAY":
+                    logging.info(f"{self.hostname}-{input_date_formatted}-httprequests-w3c* file present")        
+                else:
+                    logging.info(f"{access_log_prefix}.{input_date_formatted}{access_log_suffix} file present")        
     
             for files in dated_access_files:
                     self.access_log_files.append(str(files))
@@ -453,3 +467,4 @@ class LogFileFinder:
         self.tlog_dir = ""
         self.tlog_backup_files = []
         self.tlog_backup_dir = ""
+        self.access_dir = ""

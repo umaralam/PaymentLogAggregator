@@ -64,7 +64,8 @@ class Tlog:
         # self.packs_ctid_data_list = []
         
         #header data mapped tlogs
-        self.onmopay_access_log_dict = {}
+        self.onmopay_paycore_access_log_dict = {}
+        # self.onmopay_paycore_access_log_dict = {}
         self.griff_access_log_dict = {}
         self.packs_access_log_dict = {}
         self.prism_access_log_dict = {}
@@ -178,11 +179,20 @@ class Tlog:
             for file in self.backup_tlog_files:
                 #function call
                 self.msisdn_ctid_map(pname, file, self.is_backup_file)
+        
+        if pname == "ONMOPAY":
+            if self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_process_access_log"]:
+                logging.debug('onmopay paycore access path exists.')
+                self.access_files = logfile_object.get_access_files(pname)
+                logging.info('pay access files:%s', self.access_files)
             
-        if pname == "GRIFF":
+            if self.access_files:
+                self.ctid_based_accesslog_fetch(pname, self.access_files)
+                
+        elif pname == "GRIFF":
             if self.initializedPath_object.griff_tomcat_log_path_dict["griff_tomcat_access_path"]:
                 logging.debug('griff tomcat access path exists.')
-                self.access_files = logfile_object.get_tomcat_access_files(pname)
+                self.access_files = logfile_object.get_access_files(pname)
             
             if self.access_files:
                 self.ctid_based_accesslog_fetch(pname, self.access_files)
@@ -190,7 +200,7 @@ class Tlog:
         elif pname == "PACKS":
             if self.initializedPath_object.packs_tomcat_log_path_dict["packs_tomcat_access_path"]:
                 logging.debug('packs tomcat access path exists.')
-                self.access_files = logfile_object.get_tomcat_access_files(pname)
+                self.access_files = logfile_object.get_access_files(pname)
             
             if self.access_files:
                 self.ctid_based_accesslog_fetch(pname, self.access_files)
@@ -198,7 +208,7 @@ class Tlog:
         elif pname == "PRISM_TOMCAT":
             if self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_access_path"]:
                 logging.debug('prism tomcat access path exists.')
-                self.access_files = logfile_object.get_tomcat_access_files(pname)
+                self.access_files = logfile_object.get_access_files(pname)
             
             if self.access_files:
                 self.msisdn_based_accesslog_fetch(pname, self.access_files)
@@ -891,8 +901,8 @@ class Tlog:
         
     def ctid_based_accesslog_fetch(self, pname, files):
         #access data for griff and packs        
-        if pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT":
-            if pname == "GRIFF" or pname == "PACKS":
+        if pname == "ONMOPAY" or pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT":
+            if pname == "ONMOPAY" or pname == "GRIFF" or pname == "PACKS":
                 ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
             # elif pname == "PRISM_TOMCAT":
             #     ctid_map = self.prism_ctid
@@ -984,7 +994,12 @@ class Tlog:
         
         logging.info('ctid based access data dict: %s', self.ctid_access_data_dict)
         
-        if pname == "GRIFF":
+        if pname == "ONMOPAY":
+            self.onmopay_paycore_access_log_dict = {"ONMOPAY_PAYCORE_ACCESS_LOG": dict(self.ctid_access_data_dict)}
+            self.payment_data_dict_list.append(self.onmopay_paycore_access_log_dict)
+            logging.info('onmopay paycore access logs: %s', self.onmopay_paycore_access_log_dict)
+            
+        elif pname == "GRIFF":
             # self.griff_access_log_dict = {"GRIFF_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
             self.griff_access_log_dict = {"GRIFF_ACCESS_LOG": dict(self.ctid_access_data_dict)}
             self.payment_data_dict_list.append(self.griff_access_log_dict)
