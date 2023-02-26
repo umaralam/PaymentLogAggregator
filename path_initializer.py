@@ -449,6 +449,7 @@ class LogPathFinder():
                             self.parse_appender(data, tree, pname)
 
             elif pname == 'GRIFF':
+                tree = ET.parse(log4j2_path)
                 for data in tree.findall('./Loggers/AsyncLogger'):
                     self.parse_appender(data, tree, pname)
             
@@ -460,6 +461,7 @@ class LogPathFinder():
                     self.parse_appender(data, tree, pname)
             
             elif pname == 'PRISM' and sub_process != None:
+                tree = ET.parse(log4j2_path)
                 for data in tree.findall('./Loggers/Logger'):
                     self.parse_appender(data, tree, pname, sub_process)
                 
