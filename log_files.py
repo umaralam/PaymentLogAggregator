@@ -388,13 +388,19 @@ class LogFileFinder:
         hostname = socket.gethostname()
         
         try:
-            if pname == "ONMOPAY":
-                splitted_tlog_path = str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_process_access_log"])\
-                                    .split("/")[0:-1]
+            if pname == "ONMOPAY" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+                if pname == "ONMOPAY":
+                    splitted_tlog_path = str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_process_access_log"])\
+                                        .split("/")[0:-1]
+                elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+                    splitted_tlog_path = str(self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_process_access_log"])\
+                                        .split("/")[0:-1]
+    
                 for i in range(1, len(splitted_tlog_path)):
                     self.access_dir += f"/{splitted_tlog_path[i]}"
                     access_log_path = self.access_dir
-            if pname == "GRIFF":
+                    
+            elif pname == "GRIFF":
                 access_log_prefix = self.config[hostname]["GRIFF"]["GRIFF_TOMCAT"]["ACCESS_LOG_PREFIX"]
                 access_log_suffix = self.config[hostname]["GRIFF"]["GRIFF_TOMCAT"]["ACCESS_LOG_SUFFIX"]
                 access_log_path = self.initializedPath_object.griff_tomcat_log_path_dict["griff_tomcat_access_path"]
@@ -415,7 +421,7 @@ class LogFileFinder:
         path = Path(rf"{access_log_path}")
         
         #method call to date range list
-        if pname == "ONMOPAY":
+        if pname == "ONMOPAY" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
             self.input_date = self.date_range_list_utc(int(self.s_date.timestamp()), int(self.e_date.timestamp()))
         else:
             self.input_date = self.date_range_list(self.s_date, self.e_date)
@@ -424,13 +430,13 @@ class LogFileFinder:
             # logging.info('search date is: %s', datetime.strftime(date, "%Y-%m-%d"))
             input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
             
-            if pname == "ONMOPAY":           
+            if pname == "ONMOPAY" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":           
                 dated_access_files = [p for p in path.glob(f"{self.hostname}-{input_date_formatted}-httprequests-w3c*")]
             else:
                 dated_access_files = [p for p in path.glob(f"{access_log_prefix}.{input_date_formatted}{access_log_suffix}")]
                         
             if bool(dated_access_files):
-                if pname == "ONMOPAY":
+                if pname == "ONMOPAY" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
                     logging.info(f"{self.hostname}-{input_date_formatted}-httprequests-w3c* file present")        
                 else:
                     logging.info(f"{access_log_prefix}.{input_date_formatted}{access_log_suffix} file present")        

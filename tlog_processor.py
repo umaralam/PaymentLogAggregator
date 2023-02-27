@@ -113,6 +113,14 @@ class TlogProcessor:
             except KeyError as error:
                 logging.exception(error)
             
+            # try:
+            #     if self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_process_access_log"]:
+            #         logging.debug('%s paycore web api access path exists', pname)
+                    
+            #         tlog_object.get_tlog("ONMOPAY_PAYCORE_API_ACCESS_LOG")
+            # except KeyError as error:
+            #     logging.exception(error)
+            
             try:
                 if self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_performance-file_log"]:
                     logging.debug('%s paycore web api plog path exists', pname)

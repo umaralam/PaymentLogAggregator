@@ -63,9 +63,9 @@ class Tlog:
         # self.griff_ctid_data_list = []
         # self.packs_ctid_data_list = []
         
-        #header data mapped tlogs
+        #access dictionary paramters
         self.onmopay_paycore_access_log_dict = {}
-        # self.onmopay_paycore_access_log_dict = {}
+        self.onmopay_paycore_webApi_access_log_dict = {}
         self.griff_access_log_dict = {}
         self.packs_access_log_dict = {}
         self.prism_access_log_dict = {}
@@ -75,6 +75,7 @@ class Tlog:
         self.payment_data_dict = payment_data_dict
         self.config = config
         
+        #header data mapped tlogs
         self.onmopay_tlog_dict = onmopay_tlog_dict
         self.onmopay_cg_redirection_tlog_dict = onmopay_cg_redirection_tlog_dict
         self.onmopay_request_counter_tlog_dict = onmopay_request_counter_tlog_dict
@@ -185,6 +186,18 @@ class Tlog:
                 logging.debug('onmopay paycore access path exists.')
                 self.access_files = logfile_object.get_access_files(pname)
                 logging.info('pay access files:%s', self.access_files)
+            
+            if self.access_files:
+                self.ctid_based_accesslog_fetch(pname, self.access_files)
+        
+        elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+            # self.constructor_parameter_reinitialize()
+            # self.constructor_ctid_msisdn_paramter_reinitialization()
+            
+            if self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_process_access_log"]:
+                logging.debug('onmopay paycore web api access path exists.')
+                self.access_files = logfile_object.get_access_files(pname)
+                logging.info('pay api access files:%s', self.access_files)
             
             if self.access_files:
                 self.ctid_based_accesslog_fetch(pname, self.access_files)
@@ -901,8 +914,8 @@ class Tlog:
         
     def ctid_based_accesslog_fetch(self, pname, files):
         #access data for griff and packs        
-        if pname == "ONMOPAY" or pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT":
-            if pname == "ONMOPAY" or pname == "GRIFF" or pname == "PACKS":
+        if pname == "ONMOPAY" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "GRIFF" or pname == "PACKS" or pname == "PRISM_TOMCAT":
+            if pname == "ONMOPAY" or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "GRIFF" or pname == "PACKS":
                 ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
             # elif pname == "PRISM_TOMCAT":
             #     ctid_map = self.prism_ctid
@@ -998,6 +1011,11 @@ class Tlog:
             self.onmopay_paycore_access_log_dict = {"ONMOPAY_PAYCORE_ACCESS_LOG": dict(self.ctid_access_data_dict)}
             self.payment_data_dict_list.append(self.onmopay_paycore_access_log_dict)
             logging.info('onmopay paycore access logs: %s', self.onmopay_paycore_access_log_dict)
+        
+        elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+            self.onmopay_paycore_webApi_access_log_dict = {"ONMOPAY_PAYCORE_API_ACCESS_LOG": dict(self.ctid_access_data_dict)}
+            self.payment_data_dict_list.append(self.onmopay_paycore_webApi_access_log_dict)
+            logging.info('onmopay paycore web api access logs: %s', self.onmopay_paycore_webApi_access_log_dict)
             
         elif pname == "GRIFF":
             # self.griff_access_log_dict = {"GRIFF_ACCESS_LOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_access_data_dict)}}
