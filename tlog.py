@@ -17,8 +17,9 @@ class Tlog:
     def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode,\
                     payment_data_dict_list, payment_data_dict, config, onmopay_tlog_dict,\
                     onmopay_cg_redirection_tlog_dict, onmopay_request_counter_tlog_dict,\
-                    onmopay_paycore_plog_dict, onmopay_paycore_webapi_plog_dict, griff_tlog_dict,\
-                    packs_tlog_dict, griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
+                    onmopay_paycore_plog_dict, onmopay_paycore_webapi_plog_dict,\
+                    onmopay_callback_delivery_failure_log_dict, onmopay_callback_delivery_success_log_dict,\
+                    griff_tlog_dict, packs_tlog_dict, griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict, prism_daemon_tlog_thread_dict,\
                     prism_tomcat_tlog_thread_dict, prism_tomcat_handler_generic_http_req_resp_dict,\
                     prism_daemon_handler_generic_http_req_resp_dict, prism_tomcat_handler_generic_soap_req_resp_dict,\
@@ -81,6 +82,8 @@ class Tlog:
         self.onmopay_request_counter_tlog_dict = onmopay_request_counter_tlog_dict
         self.onmopay_paycore_plog_dict = onmopay_paycore_plog_dict
         self.onmopay_paycore_webapi_plog_dict = onmopay_paycore_webapi_plog_dict
+        self.onmopay_callback_delivery_failure_log_dict = onmopay_callback_delivery_failure_log_dict
+        self.onmopay_callback_delivery_success_log_dict = onmopay_callback_delivery_success_log_dict
         
         self.griff_tlog_dict = griff_tlog_dict
         self.griff_ext_hit_tlog_dict = griff_ext_hit_tlog_dict
@@ -130,7 +133,8 @@ class Tlog:
             self.constructor_ctid_msisdn_paramter_reinitialization()
         
         elif pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
-            or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT"\
+            or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG"\
+            or pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG" or pname == "GRIFF_EXTHIT" or pname == "PACKS_EXTHIT"\
             or pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP"\
             or pname == "PRISM_DAEMON_GENERIC_HTTP_REQ_RESP" or pname == "PRISM_DAEMON_GENERIC_SOAP_REQ_RESP"\
             or pname == "PRISM_TOMCAT_REQ_RESP" or pname == "PRISM_TOMCAT_CALLBACK_V2_REQ_RESP"\
@@ -152,7 +156,8 @@ class Tlog:
             if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
                 or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION"\
                 or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
-                or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+                or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG"\
+                or pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
                 for file in self.tlog_files:
                     # function call
                     self.msisdn_ctid_map(pname, file, self.is_backup_file)
@@ -230,7 +235,8 @@ class Tlog:
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
             or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION"\
             or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
-            or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+            or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG"\
+            or pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
             if self.ctid_msisdn_map_dict and (self.tlog_files_with_ctid_msisdn\
                                             or self.tlog_backup_files_with_ctid_msisdn):
                 if self.tlog_files_with_ctid_msisdn:
@@ -359,7 +365,9 @@ class Tlog:
                                 logging.info('normal ctid: %s and row: %s', ctid, row)
                                 self.tlog_files_with_ctid_msisdn.append(file)
             
-            elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+            elif pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG"\
+                or pname ==  "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
+                    
                 for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
                     try:
                         ctid_data = subprocess.check_output(f"grep -a {ctid} {file}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
@@ -369,6 +377,28 @@ class Tlog:
                             self.tlog_files_with_ctid_msisdn.append(file)
                     except subprocess.CalledProcessError as error:
                         logging.info(error)
+            
+            # elif pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG":
+            #     for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
+            #         try:
+            #             ctid_data = subprocess.check_output(f"grep -a {ctid} {file}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                        
+            #             if ctid_data:
+            #                 logging.info('ctid file is: %s', file)
+            #                 self.tlog_files_with_ctid_msisdn.append(file)
+            #         except subprocess.CalledProcessError as error:
+            #             logging.info(error)
+            
+            # elif pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
+            #     for ctid in self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]:
+            #         try:
+            #             ctid_data = subprocess.check_output(f"grep -a {ctid} {file}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                        
+            #             if ctid_data:
+            #                 logging.info('ctid file is: %s', file)
+            #                 self.tlog_files_with_ctid_msisdn.append(file)
+            #         except subprocess.CalledProcessError as error:
+            #             logging.info(error)
                     
             
             elif pname == "GRIFF":
@@ -448,7 +478,8 @@ class Tlog:
             if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
                 or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION"\
                 or pname == "ONMOPAY_REQUEST_COUNTER" or pname == "ONMOPAY_PAYCORE_PERF_LOG"\
-                or pname == "ONMOPAY_PAYCORE_API_PERF_LOG":
+                or pname == "ONMOPAY_PAYCORE_API_PERF_LOG" or pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG"\
+                or pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
                 temp_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
                 
                 for ctid in temp_map:
@@ -532,6 +563,12 @@ class Tlog:
                         "FinalAction","AdditionalData","PerformanceLog"
                     ]
         
+        # elif pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG":
+        #     header = [
+        #                 "UserID","State","DateTime","Channel","CAMPAIGN_ID","CallbackUrl","SessionID",\
+        #                 "DMRequest","ActivityIndex","PackAmount","PackType","CampaignActivityIndex"
+        #             ]
+        
         elif pname == "GRIFF":
             header = [
                         "TIMESTAMP","CTID","HOST","X_FORWARDED_FOR","THREAD_NAME","TOTAL_TIME","GRIFF_TIME",\
@@ -595,7 +632,8 @@ class Tlog:
         logging.info('process name: %s', pname)
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "GRIFF_EXTHIT"\
-            or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_REQUEST_COUNTER":
+            or pname == "PACKS_EXTHIT" or pname == "ONMOPAY" or pname == "ONMOPAY_REQUEST_COUNTER"\
+            or pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG" or pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
             ctid_map = self.ctid_msisdn_map_dict[self.validation_object.fmsisdn]
              
             for ctid in ctid_map:
@@ -620,6 +658,10 @@ class Tlog:
                             for index, element in enumerate(splitted_data):
                                 data_dict[header[index]] = element.replace('"', '').replace("'", '"')
                             self.ctid_data_dict[ctid].append(data_dict)
+                    
+                    elif pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG" or pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
+                        self.ctid_data_dict[ctid].append(data)
+                        logging.info('splitted data of callback d: %s', self.ctid_data_dict[ctid])
                     
                     elif pname == "GRIFF":
                         if ctid == splitted_data[1].replace('"', '').strip():
@@ -713,6 +755,17 @@ class Tlog:
             self.onmopay_request_counter_tlog_dict = {"ONMOPAY_PAYCORE_REQUEST_COUNTER": dict(self.ctid_data_dict)}
             self.payment_data_dict_list.append(self.onmopay_request_counter_tlog_dict)
             logging.info('onmopay paycore request counter tlogs: %s', str(self.onmopay_request_counter_tlog_dict))
+        
+        elif pname == "ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG":
+            self.onmopay_callback_delivery_failure_log_dict = {"ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG": dict(self.ctid_data_dict)}
+            self.payment_data_dict_list.append(self.onmopay_callback_delivery_failure_log_dict)
+            logging.info('onmopay callback delivery failure logs: %s', str(self.onmopay_callback_delivery_failure_log_dict))
+        
+        elif pname == "ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG":
+            logging.info('success data dict: %s', self.ctid_data_dict)
+            self.onmopay_callback_delivery_success_log_dict = {"ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG": dict(self.ctid_data_dict)}
+            self.payment_data_dict_list.append(self.onmopay_callback_delivery_success_log_dict)
+            logging.info('onmopay callback delivery success logs: %s', str(self.onmopay_callback_delivery_success_log_dict))
         
         elif pname == "GRIFF":
             # self.griff_tlog_dict = {"GRIFF_TLOG": {f"{self.validation_object.fmsisdn}": dict(self.ctid_data_dict)}}

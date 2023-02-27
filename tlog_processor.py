@@ -9,6 +9,7 @@ class TlogProcessor:
                     payment_data_dict_list, payment_data_dict, onmopay_tlog_dict,\
                     onmopay_cg_redirection_tlog_dict, onmopay_request_counter_tlog_dict,\
                     onmopay_paycore_plog_dict, onmopay_paycore_webapi_plog_dict,\
+                    onmopay_callback_delivery_failure_log_dict, onmopay_callback_delivery_success_log_dict,\
                     griff_tlog_dict, packs_tlog_dict,\
                     griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict,\
@@ -35,6 +36,8 @@ class TlogProcessor:
         self.onmopay_request_counter_tlog_dict = onmopay_request_counter_tlog_dict
         self.onmopay_paycore_plog_dict = onmopay_paycore_plog_dict
         self.onmopay_paycore_webapi_plog_dict = onmopay_paycore_webapi_plog_dict
+        self.onmopay_callback_delivery_failure_log_dict = onmopay_callback_delivery_failure_log_dict
+        self.onmopay_callback_delivery_success_log_dict = onmopay_callback_delivery_success_log_dict
         
         self.griff_tlog_dict = griff_tlog_dict
         self.packs_tlog_dict = packs_tlog_dict
@@ -69,7 +72,8 @@ class TlogProcessor:
                             self.log_mode, self.payment_data_dict_list, self.payment_data_dict, self.config,\
                             self.onmopay_tlog_dict, self.onmopay_cg_redirection_tlog_dict,\
                             self.onmopay_request_counter_tlog_dict, self.onmopay_paycore_plog_dict,\
-                            self.onmopay_paycore_webapi_plog_dict, self.griff_tlog_dict, self.packs_tlog_dict,\
+                            self.onmopay_paycore_webapi_plog_dict, self.onmopay_callback_delivery_failure_log_dict,\
+                            self.onmopay_callback_delivery_success_log_dict, self.griff_tlog_dict, self.packs_tlog_dict,\
                             self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                             self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
                             self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict,\
@@ -122,10 +126,18 @@ class TlogProcessor:
             #     logging.exception(error)
             
             try:
-                if self.initializedPath_object.onmopay_paycoreWebApi_log_path_dict["onmopay_paycore_webapi_performance-file_log"]:
-                    logging.debug('%s paycore web api plog path exists', pname)
+                if self.initializedPath_object.onmopay_callbackDelivery_log_path_dict["onmopay_callback_delivery_DMTaskEntryStatusDetail-file_log"]:
+                    logging.debug('%s callback delivery success path exists', pname)
                     
-                    tlog_object.get_tlog("ONMOPAY_PAYCORE_API_PERF_LOG")
+                    tlog_object.get_tlog("ONMOPAY_CALLBACK_DELIVERY_SUCCESS_LOG")
+            except KeyError as error:
+                logging.exception(error)
+                
+            try:
+                if self.initializedPath_object.onmopay_callbackDelivery_log_path_dict["onmopay_callback_delivery_DMTaskFailureStatusEntryDetail-file_log"]:
+                    logging.debug('%s callback delivery failure path exists', pname)
+                    
+                    tlog_object.get_tlog("ONMOPAY_CALLBACK_DELIVERY_FAILURE_LOG")
             except KeyError as error:
                 logging.exception(error)
                     
