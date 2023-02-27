@@ -170,6 +170,8 @@ class DaemonLogProcessor:
         
         elif pname == "ONMOPAY_PAY_API":
             self.check_pay_api_errorlog(pname, ctid)
+        elif pname == "ONMOPAY_CALLBACK_DELIVERY":
+            self.check_pay_api_errorlog(pname, ctid)
         
         elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
             #msisdn log processing

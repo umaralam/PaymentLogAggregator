@@ -126,6 +126,13 @@ class TlogParser:
                         #will be checking for pay core api error log
                         daemonLogProcessor_object.process_daemon_log(pname, None, ctid, None, None, None)  
                 
+                # for ctid in ctid_map:
+                #     if self.log_mode == "error":
+                #         pname = "ONMOPAY_CALLBACK_DELIVERY"
+                #         logging.info('Processing for %s error log', pname)
+                #         #will be checking for pay core api error log
+                #         daemonLogProcessor_object.process_daemon_log(pname, None, ctid, None, None, None)  
+                
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                 if pname == "PRISM_TOMCAT":
                     thread_list = self.prism_tomcat_tlog_thread_dict["PRISM_TOMCAT_THREAD"]
