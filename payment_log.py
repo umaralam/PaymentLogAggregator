@@ -1,8 +1,17 @@
+<<<<<<< HEAD
 from datetime import datetime
 from collections import OrderedDict
 import json
 import logging
 import os
+=======
+#!/usr/local/bin/python3
+from datetime import datetime
+import json
+import logging
+import os
+from pathlib import Path
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
 import socket
 import sys
 from input_validation import InputValidation
@@ -20,6 +29,7 @@ class Main:
         num_argv = len(sys.argv)
         uid = sys.argv[len(sys.argv) - 1]
         hostname = socket.gethostname()
+<<<<<<< HEAD
 
         # set the output directory path
         output_directory_path = os.path.join(os.getcwd(), 'out')
@@ -30,6 +40,10 @@ class Main:
 
         # set the output directory object
         outputDirectory_object = output_directory_path
+=======
+        outputDirectory_object = Path('out')
+        outputDirectory_object.mkdir(exist_ok=True)
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         
         validation_object = InputValidation(num_argv, sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
         validation_object.validate_argument()
@@ -40,6 +54,7 @@ class Main:
             logging.info('removing old modified_log4j2.xml')
             os.remove('modified_log4j2.xml')
         
+<<<<<<< HEAD
         if os.path.exists('modified_nlog.config'):
             logging.info('removing old modified_nlog.config')
             os.remove('modified_nlog.config')
@@ -57,6 +72,11 @@ class Main:
             
             # data = os.path("{}.json".format(hostname)).read_text()
             config = json.loads(data, object_pairs_hook=OrderedDict)
+=======
+        if validation_object.is_input_valid:
+            data = Path(f"{hostname}.json").read_text()
+            config = json.loads(data)
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             
             if config:
                 logging.info('\n')
@@ -86,7 +106,11 @@ class Main:
         end = datetime.now()
         logging.debug('end of execution time: %s', end)
             
+<<<<<<< HEAD
         duration = end - start
+=======
+        duration = end.timestamp() - start.timestamp()
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         logging.debug('Total time taken %s', duration)
         
         #move log to out folder and zip the out folder

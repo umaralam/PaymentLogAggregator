@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
 import logging
 from path_initializer import LogPathFinder
 from log_processor import PROCESSOR
@@ -16,6 +20,7 @@ class Initializer:
         initializedPath_object = LogPathFinder(self.hostname, self.config, self.validation_object)
         try:
             for i in self.config[self.hostname]:
+<<<<<<< HEAD
                 logging.info('iorder: %s', i)
                 try:
                     if self.config[self.hostname]["ONMOPAY"] and i == 'ONMOPAY':
@@ -112,6 +117,8 @@ class Initializer:
                 except Exception as error:
                     logging.warning(error)
                     
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 try:
                     if self.config[self.hostname]["GRIFF"] and i == 'GRIFF':
                         initializedPath_object.initialize_path(i)
@@ -125,8 +132,12 @@ class Initializer:
                         else:
                             logging.info('%s TOMCAT PATH NOT INITIALIZED', i)
                 except KeyError as error:
+<<<<<<< HEAD
                     logging.info('\n')
                     logging.info('GRIFF process not present in %s.json file, hence processing would not be done for GRIFF', self.hostname)                             
+=======
+                    logging.exception(error)                               
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 except ValueError as error:
                     logging.warning('%s tomcat path not initialized. %s', i, error)
                 except Exception as error:
@@ -145,8 +156,12 @@ class Initializer:
                         else:
                             logging.error('%s TOMCAT PATH NOT INITIALIZED', i)
                 except KeyError as error:
+<<<<<<< HEAD
                     logging.info('\n')
                     logging.info('PACKS process not present in %s.json file, hence processing would not be done for PACKS', self.hostname)
+=======
+                    logging.exception(error)
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 except ValueError as error:
                     logging.warning('%s tomcat path not initialized. %s', i, error)
                 except Exception as error:
@@ -209,17 +224,26 @@ class Initializer:
                                             Hence PRISM_SMSD logs will not be initialized and fetched', i, self.hostname
                                         )
                 except KeyError as error:
+<<<<<<< HEAD
                     logging.info('\n')
                     logging.info('PRISM process not present in %s.json file, hence processing would not be done for PRISM', self.hostname)
+=======
+                    logging.exception(error)
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 except ValueError as error:
                     logging.warning('any of the %s path not initialized', i)
                 except Exception as error:
                     logging.warning(error)
+<<<<<<< HEAD
                     
             logging.info('\n')
             logging.info('log mode: %s', self.log_mode)     
             
             #processor is called
+=======
+            
+            logging.info('log mode: %s', self.log_mode)      
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             processor_object = PROCESSOR(initializedPath_object, self.outputDirectory_object, self.validation_object, self.log_mode, self.oarm_uid, self.config)
             processor_object.process()
                 

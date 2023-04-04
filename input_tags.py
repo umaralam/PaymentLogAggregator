@@ -131,7 +131,11 @@ class PrismTlogAwaitPushTimeOutTag(Enum):
     
 class PrismTlogHandlerExp(Enum):
     CHARGING = "CHG=30,"
+<<<<<<< HEAD
     # CHG = "CHG=41,"
+=======
+    CHG = "CHG=41,"
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
 
 class PrismTlogSmsTag(Enum):
     SMS_INVALID = "I"
@@ -148,7 +152,11 @@ class PrismTasks(Enum):
     CHECK_BALANCE = "Q"
     RESERVE = "RA"
     CHARGING = "B"
+<<<<<<< HEAD
     # CHG = "B"
+=======
+    CHG = "B"
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
     REMOTE_ACT = "R"
     REMOTE_DCT = "H"
     DECTIVATION = "D"
@@ -160,6 +168,7 @@ class PrismTasks(Enum):
     GENERIC_TASK1 = "G1"
     GENERIC_TASK2 = "G2"
     GENERIC_TASK3 = "G3"
+<<<<<<< HEAD
     GENERIC_TASK4 = "G4"
     
 #daius activity type
@@ -345,3 +354,6 @@ class DaiusActivityType(Enum):
     ThirdPartyVerifyOTPRequestValidationFailure = "813"
     ThirdPartyVerifyOTPRequestSuccess = "814"
     ThirdPartyVerifyOTPRequestFailure = "815"
+=======
+    GENERIC_TASK4 = "G4"
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909

@@ -1,6 +1,10 @@
 import json
 import logging
 import os
+<<<<<<< HEAD
+=======
+from pathlib import Path
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
 import re
 import shutil
 import socket
@@ -19,14 +23,20 @@ class FileWriter:
         self.__final_index = 0 
         
     def write_json_tlog_data(self, payment_data_dict):
+<<<<<<< HEAD
                 
         #dumping payment transaction data
 
         with open("{0}/{1}_paymentTransactionData.json".format(self.outputDirectory_object, self.hostname), "w") as outfile:
+=======
+        #dumping payment transaction data
+        with open(f"{self.outputDirectory_object}/{self.hostname}_paymentTransactionData.json", "w") as outfile:
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             json.dump(payment_data_dict, outfile, indent=4)
     
     def write_complete_thread_log(self, pname, tlog_thread, record, ctid, task_type, sub_type, input_tag):
         #write complete thread log
+<<<<<<< HEAD
         thread_outfile = ""
         process_folder = ""
         error_code = tlog_thread
@@ -55,16 +65,43 @@ class FileWriter:
         elif pname == "PRISM_SMSD":
             process_folder = os.path.join(self.outputDirectory_object, "{}_issue_prism_smsd".format(self.hostname))                
             thread_outfile = "{0}/{1}_prism_smsd.log".format(process_folder, tlog_thread)
+=======
+        if pname == "GRIFF":
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")                
+            thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_griff.log"
+        
+        elif pname == "PACKS":
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")                
+            thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_packs.log"
+        
+        elif pname == "PRISM_TOMCAT":
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat")                
+            thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_prism_tomcat.log"
+        
+        elif pname == "PRISM_DEAMON":
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")                
+            thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_prism_daemon.log"
+        
+        elif pname == "PRISM_SMSD":
+            process_folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_smsd")                
+            thread_outfile = f"{process_folder}/{tlog_thread}_prism_smsd.log"
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             
         try:
             with open(thread_outfile, "w") as write_file:
                 write_file.writelines(record)
+<<<<<<< HEAD
                 if pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY":
                     if pname == "ONMOPAY":
                         self.write_trimmed_thread_log(pname, process_folder, error_code, thread_outfile, ctid, RequestOrigin, sub_type, input_tag)
                     else:
                         self.write_trimmed_thread_log(pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag)
                         
+=======
+                if pname == "GRIFF" or pname == "PACKS":
+                    self.write_trimmed_thread_log(pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag)
+                
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                     self.write_trimmed_thread_log(pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag)
                     
@@ -72,6 +109,7 @@ class FileWriter:
             logging.info(error)
                 
     def write_trimmed_thread_log(self, pname, process_folder, tlog_thread, thread_outfile, ctid, task_type, sub_type, input_tag):
+<<<<<<< HEAD
         error_code = tlog_thread
         RequestOrigin = task_type
         trimmed_thread_outfile = ""
@@ -104,6 +142,22 @@ class FileWriter:
                                     self.set_initial_index(self.get_final_index() - 50)
                                 break
                             
+=======
+        if pname == "GRIFF":
+            trimmed_thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_trimmed_griff.log"
+            
+        elif pname == "PACKS":
+            trimmed_thread_outfile = f"{process_folder}/{ctid}_{tlog_thread}_trimmed_packs.log"
+        
+        elif pname == "PRISM_TOMCAT":
+            trimmed_thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_trimmed_prism_tomcat.log"
+        
+        elif pname == "PRISM_DEAMON":
+            trimmed_thread_outfile = f"{process_folder}/{task_type}_{tlog_thread}_trimmed_prism_daemon.log"
+        
+        try:   
+            if pname == "GRIFF" or pname == "PACKS":
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 #set initial index based on start of search string
                 if pname == "GRIFF":
                     for gf_start_serach_string in Griff_St_SString:
@@ -120,7 +174,10 @@ class FileWriter:
                                     self.set_initial_index(i)
                                     break
                 
+<<<<<<< HEAD
                     
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 #set final index based on end of search string
                 if pname == "GRIFF":
                     for gf_end_serach_string in Griff_En_SString:
@@ -178,17 +235,21 @@ class FileWriter:
         """
         self.__initial_index = initial_index
     
+<<<<<<< HEAD
     def get_initial_index(self):
         """
         getting initial index from
         """
         return self.__initial_index
     
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
     def set_final_index(self, final_index):
         """
         Setting initial index from
         """
         self.__final_index = final_index
+<<<<<<< HEAD
     
     def get_final_index(self):
         """
@@ -199,19 +260,35 @@ class FileWriter:
     def zipped_outfile(self):
         #zipping the out folder
         out_zipFile = "{}_{}_outfile.zip".format(self.oarm_uid, self.hostname)
+=======
+                
+    def zipped_outfile(self):
+        #zipping the out folder
+        out_zipFile = Path(f"{self.oarm_uid}_{self.hostname}_outfile.zip")
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         
         with ZipFile(out_zipFile, "a", compression=zipfile.ZIP_DEFLATED) as zip:
             for root, dirs, files in os.walk(self.outputDirectory_object):
                 for file in files:
                     zip.write(os.path.join(root, file))
+<<<<<<< HEAD
         print("OARM_OUTPUT_FILENAME|{}".format(os.path.abspath(out_zipFile)))
+=======
+        print(f"OARM_OUTPUT_FILENAME|{Path(out_zipFile).absolute()}")
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         
         
     def log_mover(self):
         #move log_aggregator.log from current directory to respective directory.
+<<<<<<< HEAD
         log = "{0}/{1}_aggregator.log".format(self.outputDirectory_object, self.hostname)
         
         if os.path.exists('aggregator.log'):
+=======
+        log = f'{self.outputDirectory_object}/{self.hostname}_aggregator.log'
+        
+        if Path('aggregator.log').exists():
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             try:
                 if os.path.isfile(log):
                     logging.info('aggregator.log file already exists. Hence removing and copying it.')

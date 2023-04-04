@@ -6,9 +6,14 @@ class TlogProcessor:
     Parse the tlog for various conditions
     """
     def __init__(self, initializedPath_object, outputDirectory_object, validation_object, log_mode, config,\
+<<<<<<< HEAD
                     payment_data_dict_list, payment_data_dict, onmopay_tlog_dict,\
                     onmopay_cg_redirection_tlog_dict, onmopay_request_counter_tlog_dict,\
                     onmopay_paycore_plog_dict, griff_tlog_dict, packs_tlog_dict,\
+=======
+                    payment_data_dict_list, payment_data_dict,\
+                    griff_tlog_dict, packs_tlog_dict,\
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                     griff_ext_hit_tlog_dict, packs_ext_hit_tlog_dict,\
                     prism_ctid, prism_tomcat_tlog_dict, prism_daemon_tlog_dict,\
                     prism_daemon_tlog_thread_dict, prism_tomcat_tlog_thread_dict,\
@@ -28,12 +33,15 @@ class TlogProcessor:
         self.config = config
         self.payment_data_dict_list = payment_data_dict_list
         self.payment_data_dict = payment_data_dict
+<<<<<<< HEAD
         
         self.onmopay_tlog_dict = onmopay_tlog_dict
         self.onmopay_cg_redirection_tlog_dict = onmopay_cg_redirection_tlog_dict
         self.onmopay_request_counter_tlog_dict = onmopay_request_counter_tlog_dict
         self.onmopay_paycore_plog_dict = onmopay_paycore_plog_dict
         
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         self.griff_tlog_dict = griff_tlog_dict
         self.packs_tlog_dict = packs_tlog_dict
         self.griff_ext_hit_tlog_dict = griff_ext_hit_tlog_dict
@@ -65,8 +73,11 @@ class TlogProcessor:
         #tlog object
         tlog_object = Tlog(self.initializedPath_object, self.outputDirectory_object, self.validation_object,\
                             self.log_mode, self.payment_data_dict_list, self.payment_data_dict, self.config,\
+<<<<<<< HEAD
                             self.onmopay_tlog_dict, self.onmopay_cg_redirection_tlog_dict,\
                             self.onmopay_request_counter_tlog_dict, self.onmopay_paycore_plog_dict,\
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                             self.griff_tlog_dict, self.packs_tlog_dict,\
                             self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                             self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
@@ -83,6 +94,7 @@ class TlogProcessor:
         # tlog_object.get_tlog(pname)
         
         # ctid_msisdn_data, tlog_dict = tlog_object.get_tomcat_tlog(pname)
+<<<<<<< HEAD
         if pname == "ONMOPAY":
             #fetching onmopay access and tlog
             self.onmopay_tlog_dict = tlog_object.get_tlog(pname)
@@ -112,6 +124,10 @@ class TlogProcessor:
                 logging.exception(error)
                     
         elif pname == "GRIFF":
+=======
+        
+        if pname == "GRIFF":
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             #fetching griff access and tlog
             # tlog_object.get_tlog(pname)
             self.griff_tlog_dict = tlog_object.get_tlog(pname)

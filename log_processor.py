@@ -1,6 +1,10 @@
 from collections import defaultdict
 import logging
+<<<<<<< HEAD
 import os
+=======
+from pathlib import Path
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
 import shutil
 import socket
 from tlog_processor import TlogProcessor
@@ -20,6 +24,7 @@ class PROCESSOR:
         
         #for dumping data as json
         self.payment_data_dict_list = []
+<<<<<<< HEAD
         self.payment_data_dict = {"PAYMENT_TRANSACTION_DATA": {}}
         # self.payment_transaction_data = defaultdict(list)
         # self.payment_data_dict = defaultdict(list)
@@ -30,15 +35,28 @@ class PROCESSOR:
         self.onmopay_cg_redirection_tlog_dict = {}
         self.onmopay_request_counter_tlog_dict = {}
         self.onmopay_paycore_plog_dict = {}
+=======
+        self.payment_data_dict = {"PAYMENT_TRANSACTION_DATA": {f"{validation_object.fmsisdn}" : ""}}
+        
+        #griff and packs tlog dictionary
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         self.griff_tlog_dict = {}
         self.packs_tlog_dict = {}
         self.griff_ext_hit_tlog_dict = {}
         self.packs_ext_hit_tlog_dict = {}
+<<<<<<< HEAD
         self.prism_tomcat_tlog_dict = {}
         self.prism_daemon_tlog_dict = {}
         self.prism_smsd_tlog_dict = {}
         
         self.prism_ctid = []
+=======
+        
+        self.prism_ctid = []
+        self.prism_tomcat_tlog_dict = {}
+        self.prism_daemon_tlog_dict = {}
+        self.prism_smsd_tlog_dict = {}
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         self.prism_daemon_tlog_thread_dict = defaultdict(list)
         self.prism_tomcat_tlog_thread_dict = defaultdict(list)
         self.prism_tomcat_handler_generic_http_req_resp_dict = {}
@@ -57,9 +75,14 @@ class PROCESSOR:
     def process(self):
         tlogProcessor_object = TlogProcessor(self.initializedPath_object, self.outputDirectory_object,\
                                         self.validation_object, self.log_mode, self.config,\
+<<<<<<< HEAD
                                         self.payment_data_dict_list, self.payment_data_dict, self.onmopay_tlog_dict,\
                                         self.onmopay_cg_redirection_tlog_dict, self.onmopay_request_counter_tlog_dict,\
                                         self.onmopay_paycore_plog_dict, self.griff_tlog_dict, self.packs_tlog_dict,\
+=======
+                                        self.payment_data_dict_list, self.payment_data_dict,\
+                                        self.griff_tlog_dict, self.packs_tlog_dict,\
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                                         self.griff_ext_hit_tlog_dict, self.packs_ext_hit_tlog_dict,\
                                         self.prism_ctid, self.prism_tomcat_tlog_dict, self.prism_daemon_tlog_dict,\
                                         self.prism_daemon_tlog_thread_dict, self.prism_tomcat_tlog_thread_dict,\
@@ -74,6 +97,7 @@ class PROCESSOR:
         
         
         for pname in self.config[self.hostname]:
+<<<<<<< HEAD
             if pname == "ONMOPAY":
                 # folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_onmopay")
                 folder = os.path.join(self.outputDirectory_object, '{}_issue_onmopay'.format(self.hostname))
@@ -90,6 +114,10 @@ class PROCESSOR:
             elif pname == 'GRIFF':
                 # folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
                 folder = os.path.join(self.outputDirectory_object, '{}_issue_griff'.format(self.hostname))
+=======
+            if pname == 'GRIFF':
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_griff")
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 self.remove_old_process_folder(pname, folder)
                 
                 try:
@@ -101,8 +129,12 @@ class PROCESSOR:
                     logging.exception(error)
                 
             elif pname == 'PACKS':
+<<<<<<< HEAD
                 # folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")
                 folder = os.path.join(self.outputDirectory_object, '{}_issue_packs'.format(self.hostname))
+=======
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_packs")
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 self.remove_old_process_folder(pname, folder)
                 
                 try:
@@ -114,6 +146,7 @@ class PROCESSOR:
                     logging.exception(error)
                 
             elif pname == 'PRISM':
+<<<<<<< HEAD
                 folder = os.path.join(self.outputDirectory_object, '{}_issue_prism_tomcat'.format(self.hostname))
                 self.remove_old_process_folder(pname, folder)
                 
@@ -121,6 +154,15 @@ class PROCESSOR:
                 self.remove_old_process_folder(pname, folder)
                 
                 folder = os.path.join(self.outputDirectory_object, '{}_issue_prism_smsd'.format(self.hostname))
+=======
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_tomcat")
+                self.remove_old_process_folder(pname, folder)
+                
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_daemon")
+                self.remove_old_process_folder(pname, folder)
+                
+                folder = Path(f"{self.outputDirectory_object}/{self.hostname}_issue_prism_smsd")
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 self.remove_old_process_folder(pname, folder)
                 
                 try:
@@ -151,16 +193,28 @@ class PROCESSOR:
         fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
         
         if self.payment_data_dict_list:
+<<<<<<< HEAD
             
             self.payment_data_dict["PAYMENT_TRANSACTION_DATA"]["{}".format(self.validation_object.fmsisdn)] = self.payment_data_dict_list
+=======
+            self.payment_data_dict["PAYMENT_TRANSACTION_DATA"][f"{self.validation_object.fmsisdn}"] = self.payment_data_dict_list
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             
             if self.log_mode == "txn" or self.log_mode == "error" or self.log_mode == "all":
                 fileWriter_object.write_json_tlog_data(self.payment_data_dict)
                 
     def remove_old_process_folder(self, pname, folder):
             #removing process folder if already exists
+<<<<<<< HEAD
             logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
             if os.path.exists(folder):
                 shutil.rmtree(folder)
             else:
                 logging.info('%s out folder does not exists:', pname)
+=======
+            try:
+                logging.info('out directory already exists. Hence removing the old files of %s if exists.', self.hostname)
+                shutil.rmtree(folder)
+            except FileNotFoundError as error:
+                logging.info('%s out folder does not exists: %s', pname, error)
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909

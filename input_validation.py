@@ -53,12 +53,17 @@ class InputValidation:
         Validate date.
         """
         try:
+<<<<<<< HEAD
             # formatted_sdate = self.start_date.strftime("%Y%m%d")
             # self.start_date = formatted_sdate
             self.start_date = datetime.strptime(str(self.start_date), "%Y%m%d")
             # formatted_edate = self.end_date.strftime("%Y%m%d")
             # self.end_date = formatted_edate
             self.end_date = datetime.strptime(str(self.end_date), "%Y%m%d")
+=======
+            self.start_date = datetime.strptime(self.start_date, "%Y%m%d")
+            self.end_date = datetime.strptime(self.end_date, "%Y%m%d")
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             self.is_input_valid = True
             logging.debug('start date: %s and end date: %s entered is valid', datetime.strftime(self.start_date, "%Y%m%d"), datetime.strftime(self.end_date, "%Y%m%d"))
         except Exception as error:

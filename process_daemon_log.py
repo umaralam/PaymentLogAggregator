@@ -1,9 +1,13 @@
 from datetime import datetime, timedelta
 import logging
+<<<<<<< HEAD
 import os
 import shutil
 import signal
 import socket
+=======
+import signal
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
 import subprocess
 from outfile_writer import FileWriter
 
@@ -19,7 +23,10 @@ class DaemonLogProcessor:
         self.oarm_uid = oarm_uid
         
         self.log_files = []
+<<<<<<< HEAD
         self.csv_files = []
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         self.backup_log_files = []
         
         self.start_date = validation_object.start_date
@@ -35,15 +42,19 @@ class DaemonLogProcessor:
         self.s_date = datetime.strptime(datetime.strftime(self.start_date, "%Y%m%d"), "%Y%m%d")
         self.e_date = datetime.strptime(datetime.strftime(self.end_date, "%Y%m%d"), "%Y%m%d")
         self.issue_record = ""
+<<<<<<< HEAD
         self.error_code = ""
         self.is_error_in_csv = False
         
         self.hostname = socket.gethostname()
         self.onmopay_out_folder = False
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         
     def process_daemon_log(self, pname, tlog_thread, ctid, task_type, sub_type, input_tag):
         #creating out file writter object for writting log to out file
         fileWriter_object = FileWriter(self.outputDirectory_object, self.oarm_uid)
+<<<<<<< HEAD
         RequestOrigin = task_type
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY":
@@ -62,11 +73,20 @@ class DaemonLogProcessor:
                         # logging.info('paycore log file: %s', self.log_files)
                     except KeyError as error:
                         logging.info(error)
+=======
+        
+        if pname == "GRIFF" or pname == "PACKS":
+            #msisdn processing main file
+            try:
+                self.reinitialize_constructor_parameter()
+                
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 if pname == "GRIFF":
                     self.log_files.append(self.initializedPath_object.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"])
                 if pname == "PACKS":
                     self.log_files.append(self.initializedPath_object.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"])
                 
+<<<<<<< HEAD
                 if pname == "ONMOPAY":
                     if self.error_code or self.is_error_in_csv:
                         self.fetch_daemon_log(ctid, self.log_files)
@@ -84,6 +104,12 @@ class DaemonLogProcessor:
                     else:
                         logging.info('%s not found in debug log', tlog_thread)
                               
+=======
+                self.fetch_daemon_log(tlog_thread, self.log_files) 
+                
+                if self.issue_record:
+                    fileWriter_object.write_complete_thread_log(pname, tlog_thread, self.issue_record, ctid, None, None, None)
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             except KeyError as error:
                 logging.info(error)
             
@@ -171,9 +197,15 @@ class DaemonLogProcessor:
                 self.reinitialize_constructor_parameter()
                 
                 if pname == "PRISM_TOMCAT":
+<<<<<<< HEAD
                     self.log_files.append(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_TEST_{}_log".format(self.validation_object.fmsisdn)])
                 elif pname == "PRISM_DEAMON":
                     self.log_files.append(self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_TEST_{}_log".format(self.validation_object.fmsisdn)])
+=======
+                    self.log_files.append(self.initializedPath_object.prism_tomcat_log_path_dict[f"prism_tomcat_TEST_{self.validation_object.fmsisdn}_log"])
+                elif pname == "PRISM_DEAMON":
+                    self.log_files.append(self.initializedPath_object.prism_daemon_log_path_dict[f"prism_daemon_TEST_{self.validation_object.fmsisdn}_log"])
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 
                 self.fetch_daemon_log(tlog_thread, self.log_files) 
                     
@@ -292,6 +324,7 @@ class DaemonLogProcessor:
 
                 if self.is_msisdn_file:
                     if pname == "GRIFF":
+<<<<<<< HEAD
                         self.log_files.append(str(self.initializedPath_object.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"]).replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
                     if pname == "PACKS":
                         self.log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"]).replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
@@ -378,21 +411,81 @@ class DaemonLogProcessor:
                 self.log_files.append(str(self.initializedPath_object.onmopay_paycore_log_path_dict["onmopay_paycore_serviceSpecificFile_log"]).replace("${shortdate}", "{}".format(input_date_formatted)).replace("${aspnet-item:variable=ServiceId}", "*"))
         except KeyError as error:
             logging.info(error)
+=======
+                        self.log_files.append(str(self.initializedPath_object.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_LOG"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                    if pname == "PACKS":
+                        self.log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_LOG"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                    
+                elif self.is_msisdn_backup_file:
+                    if pname == "GRIFF":
+                        self.backup_log_files.append(str(self.initializedPath_object.griff_tomcat_log_path_dict["griff_DEBUGMSISDN_backup_log"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+            
+                    elif pname == "PACKS":
+                        self.backup_log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_DEBUGMSISDN_backup_log"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                
+                elif self.is_log_file:
+                    if pname == "GRIFF":
+                        self.log_files.append(str(self.initializedPath_object.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_log"]).replace(".log", f"-{input_date_formatted}*.log"))
+                    elif pname == "PACKS":
+                        self.log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_APPENDER_PACKS.FILE_log"]).replace(".log", f"-{input_date_formatted}*.log"))
+                
+                elif self.is_backup_file:
+                    if pname == "GRIFF":
+                        self.backup_log_files.append(str(self.initializedPath_object.griff_tomcat_log_path_dict["griff_GRIFFORIGINAL_backup_log"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                    
+                    elif pname == "PACKS":
+                        self.backup_log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_APPENDER_PACKS.FILE_backup_log"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                    
+                    elif pname == "PRISM_TOMCAT":
+                        self.backup_log_files.append(str(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_PRISM_backup_log"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+
+                    elif pname == "PRISM_DEAMON":
+                        self.backup_log_files.append(self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_PRISM_backup_log"].replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                    
+                    elif pname == "PRISM_SMSD":
+                        self.backup_log_files.append(self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_PRISM_backup_log"].replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                
+                elif self.is_backup_root_file:
+                    if pname == "PRISM_TOMCAT":
+                        self.backup_log_files.append(str(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_ROOT_backup_log"]).replace("yyyy-MM-dd", f"{input_date_formatted}"))
+
+                    elif pname == "PRISM_DEAMON":
+                        self.backup_log_files.append(self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_ROOT_backup_log"].replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                    
+                    elif pname == "PRISM_SMSD":
+                        self.backup_log_files.append(self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_ROOT_backup_log"].replace("yyyy-MM-dd", f"{input_date_formatted}"))
+                
+        except KeyError as error:
+            logging.info(error)
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         
     def fetch_daemon_log(self, tlog_thread, log_files):
         #check file for the recod for the given thread
         for file in log_files:
             try:
+<<<<<<< HEAD
                 # logging.info('tlog thread is: %s and log_file is: %s', tlog_thread, file)
                 
                 if self.is_msisdn_backup_file or self.is_backup_file or self.is_backup_root_file:
                     thread_log = subprocess.check_output("zcat {0} | grep -a {1}".format(file, tlog_thread), shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
                 else:
                     thread_log = subprocess.check_output("grep -a {0} {1}".format(tlog_thread, file), shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+=======
+                logging.info('tlog thread is: %s and log_file is: %s', tlog_thread, file)
+                
+                if self.is_msisdn_backup_file or self.is_backup_file or self.is_backup_root_file:
+                    thread_log = subprocess.check_output(f"zcat {file} | grep -a {tlog_thread}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                else:
+                    thread_log = subprocess.check_output(f"grep -a {tlog_thread} {file}", universal_newlines=True, shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
                 
                 record = [data for data in thread_log]
                 if record:
                     self.issue_record = record
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
             except subprocess.CalledProcessError as error:
                 logging.info('eigther %s does not exists or %s could not be found', file, tlog_thread)
                 logging.info(error)
@@ -406,6 +499,7 @@ class DaemonLogProcessor:
             curr_date += timedelta(days=1)
         return date_list
     
+<<<<<<< HEAD
     def create_process_folder(self, pname, folder):
         """
             creating process folder
@@ -420,18 +514,27 @@ class DaemonLogProcessor:
     def set_process_out_folder(self, is_true):
         self.onmopay_out_folder = is_true
             
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
     def reinitialize_constructor_parameter(self):
         self.input_date = []
         self.log_files = []
         self.backup_log_files = []
+<<<<<<< HEAD
         self.csv_files = []
         self.issue_record = ""
         self.error_code = ""
+=======
+        self.issue_record = ""
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         self.is_msisdn_file = False
         self.is_msisdn_backup_file = False
         self.is_backup_file = False
         self.is_log_file = False
         self.is_backup_root_file = False
+<<<<<<< HEAD
         self.is_error_in_csv = False
+=======
+>>>>>>> 4e4c54d0b75e9ceb5152b4838060d0dcd9be6909
         
         
