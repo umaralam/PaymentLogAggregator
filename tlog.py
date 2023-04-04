@@ -394,7 +394,7 @@ class Tlog:
         
         if pname == "GRIFF" or pname == "PACKS" or pname == "ONMOPAY" or pname == "ONMOPAY_CG_REDIRECTION":
             for row in ctid_msisdn_data:
-                logging.info("ctid msisdn row data:", row)
+                logging.info("ctid msisdn row data: %s", row)
                 if row != "":
                     ctid = ""
                     msisdn = ""
@@ -635,13 +635,8 @@ class Tlog:
                             logging.info('keys: %s', self.ctid_data_dict.keys())
             
         elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
-            # ctid_map = self.validation_object.fmsisdn
-            # logging.info('prism data ctid: %s', ctid_map)
-            logging.info('data list prism: %s', data_list)
             for data in data_list:
                 splitted_data = str(data).split("|")
-                logging.info('splitted data: %s', splitted_data)
-                # if ctid in data:
                 data_dict = OrderedDict()
                 flow_tasks_element = []
                 index_count = 28
