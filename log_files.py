@@ -131,7 +131,6 @@ class LogFileFinder:
             #current generic soap req-resp tlog files
             self.tlog_files.append('{}/TLOG_REQUEST_RESPONSE_*.tmp'.format(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_generic_soap_handler_req_resp_path"]))
             self.tlog_dir = self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_generic_soap_handler_req_resp_path"]
-        
         elif pname == "PRISM_TOMCAT_REQ_RESP":
             #current req-resp log files
             self.tlog_files.append('{}/TLOG_REQUEST_LOG_*.tmp'.format(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_req_resp_path"]))
@@ -224,7 +223,8 @@ class LogFileFinder:
                 elif pname == "PRISM_TOMCAT_GENERIC_HTTP_REQ_RESP":
                     dated_tlog_files = [os.path.join(path, p) for p in os.listdir(path) if p.startswith("TLOG_REQUEST_RESPONSE_GENERIC_HTTP_{}_".format(input_date_formatted)) and p.endswith(".log")]
                 elif pname == "PRISM_TOMCAT_GENERIC_SOAP_REQ_RESP":
-                    dated_tlog_files = [os.path.join(path, p) for p in os.listdir(path) if p.startswith("TLOG_REQUEST_RESPONSE_{}-".format(input_date_formatted)) and p.endswith(".log")]
+                    dated_tlog_files = [os.path.join(path, p) for p in os.listdir(path) if p.startswith("TLOG_REQUEST_RESPONSE_{}_".format(input_date_formatted)) and p.endswith(".log")]
+                    logging.info('tomcat soap path: %s', dated_tlog_files)
                 elif pname == "PRISM_TOMCAT_REQ_RESP":
                     dated_tlog_files = [os.path.join(path, p) for p in os.listdir(path) if p.startswith("TLOG_REQUEST_LOG_{}_".format(input_date_formatted)) and p.endswith(".log")]
                 elif pname == "PRISM_TOMCAT_CALLBACK_V2_REQ_RESP":

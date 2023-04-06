@@ -1,38 +1,37 @@
-from enum import Enum
+# from enum import Enum
 
-
-class logMode(Enum):
+class logMode(object):
     IS_DEBUG_DATA = "txn"
     IS_DEBUG_ALL = "all"
     IS_DEBUG_ERROR = "error"
 
 #griff tags
-class Griff_St_SString(Enum):
+class Griff_St_SString(object):
     #griff search string to get initial index
     search_string_1 = "Processor Called"
     search_string_2 = "Calling packs api with parameter operatorName"
 
-class Griff_En_SString(Enum):
+class Griff_En_SString(object):
     search_string_1 = "Request completed"
 
 #packs tags
-class Packs_St_SString(Enum):
+class Packs_St_SString(object):
     search_string_1 = "Entering activateSubscriber"
     
-class Packs_En_SString(Enum):
+class Packs_En_SString(object):
     search_string_1 = "prism Charging status:ERROR"
     search_string_2 = "subscriber activation status:"
 
 #prism tags
-class Prism_St_SString(Enum):
+class Prism_St_SString(object):
     #griff search string to get initial index
     search_string = "-process handler params for task {} for subType:{}"
 
-class Prism_En_SString(Enum):
+class Prism_En_SString(object):
     #griff search string to get initial index
     search_string = "-Tlog record added:{}"
 
-class PrismTlogErrorTag(Enum):
+class PrismTlogErrorTag(object):
     """
     Enum error tag
     """
@@ -53,7 +52,7 @@ class PrismTlogErrorTag(Enum):
     GENERIC_TASK3 = "GT3=3,"
     GENERIC_TASK4 = "GT4=3,"
 
-class PrismTlogRetryTag(Enum):
+class PrismTlogRetryTag(object):
     """
     Enum retry tag
     """
@@ -74,20 +73,20 @@ class PrismTlogRetryTag(Enum):
     GENERIC_TASK3 = "GT3=0,"
     GENERIC_TASK4 = "GT4=0,"
     
-class PrismTlogLowBalTag(Enum):
+class PrismTlogLowBalTag(object):
     """
     Enum low bal tag
     """
     CHECK_BALANCE = "CBAL=4,"
     CHARGING = "CHG=4,"
 
-class PrismTlogNHFTag(Enum):
+class PrismTlogNHFTag(object):
     """
     Enum no handler found tag
     """
     NHF = "NHF:NO handler configured for request"
 
-class PrismTlogAwaitPushTag(Enum):
+class PrismTlogAwaitPushTag(object):
     """
     Enum await push tag
     """
@@ -108,7 +107,7 @@ class PrismTlogAwaitPushTag(Enum):
     GENERIC_TASK3 = "GT3=8,"
     GENERIC_TASK4 = "GT4=8,"
     
-class PrismTlogAwaitPushTimeOutTag(Enum):
+class PrismTlogAwaitPushTimeOutTag(object):
     """
     Enum timeout tag
     """
@@ -129,18 +128,18 @@ class PrismTlogAwaitPushTimeOutTag(Enum):
     GENERIC_TASK3 = ",-#TIMEOUT"
     GENERIC_TASK4 = ",-#TIMEOUT"
     
-class PrismTlogHandlerExp(Enum):
+class PrismTlogHandlerExp(object):
     CHARGING = "CHG=30,"
     # CHG = "CHG=41,"
 
-class PrismTlogSmsTag(Enum):
+class PrismTlogSmsTag(object):
     SMS_INVALID = "I"
     SMS_RETRY_EXCEEDED = "E"
     SMS_PENDING = "P"
     SMS_SUSPENDED = "S"
     SMS_QUEUED = "Q"
     
-class PrismTasks(Enum):
+class PrismTasks(object):
     """
     Task type class
     """
@@ -163,7 +162,7 @@ class PrismTasks(Enum):
     GENERIC_TASK4 = "G4"
     
 #daius activity type
-class DaiusActivityType(Enum):
+class DaiusActivityType(object):
     Holding = "0"
     PreCampaignPage = "1"
     AgeVerificationCheck = "2"

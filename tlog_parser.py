@@ -1,7 +1,5 @@
-import json
 import logging
 import os
-import shutil
 import socket
 from process_daemon_log import DaemonLogProcessor
 from input_tags import PrismTlogErrorTag, PrismTlogLowBalTag, PrismTlogRetryTag,\
@@ -159,11 +157,14 @@ class TlogParser:
                 if self.log_mode == "error":
                     for sms_tlog in tlog_header_data_dict["PRISM_SMSD_TLOG"]:
                         # logging.info('sms tlog list: %s', sms_tlog)
-                        for status in PrismTlogSmsTag:
-                            if status.value == sms_tlog["STATUS"]:
-                                if not self.prism_smsd_out_folder:
-                                    self.create_process_folder(pname, folder)
-                                daemonLogProcessor_object.process_daemon_log(pname, sms_tlog["THREAD"], None, None, None, None)
+                        for var_name, var_value in PrismTlogSmsTag.__dict__.items():
+                            if not var_name.startswith("__"):
+                                if var_value == sms_tlog["STATUS"]:
+                        # for status in PrismTlogSmsTag:
+                            # if status.value == sms_tlog["STATUS"]:
+                                    if not self.prism_smsd_out_folder:
+                                        self.create_process_folder(pname, folder)
+                                    daemonLogProcessor_object.process_daemon_log(pname, sms_tlog["THREAD"], None, None, None, None)
                             
                      
         except KeyError as error:
@@ -171,26 +172,31 @@ class TlogParser:
     
     def check_for_issue_in_prism_tlog(self, pname, folder, tlog_dict, prism_tasks, *args):
         #issue validation against input_tags
+        
         for prism_input_tags in args:
-            for status in prism_input_tags:
-                for task in tlog_dict["FLOW_TASKS"]:
-                    if status.value in task:
-                        #issue thread found hence going to create prism process folder for the 1st time
-                        if pname == "PRISM_TOMCAT":
-                            if not self.prism_tomcat_out_folder:
-                                self.create_process_folder(pname, folder)
-                        elif pname == "PRISM_DEAMON":
-                            if not self.prism_daemon_out_folder:
-                                self.create_process_folder(pname, folder)
-                        
-                        #substitution parameters
-                        self.input_tag = status.value
-                        for ptask in prism_tasks:
-                            if ptask.name == status.name:
-                                if status.name == "SUB_TYPE_CHECK":
-                                    self.stck_sub_type = 'A'
-                                self.task_type = ptask.value
-                                return True
+            for var_name, var_value in prism_input_tags.__dict__.items():
+                if not var_name.startswith("__"):
+            # for status in prism_input_tags:
+                    for task in tlog_dict["FLOW_TASKS"]:
+                        if var_value in task:
+                            #issue thread found hence going to create prism process folder for the 1st time
+                            if pname == "PRISM_TOMCAT":
+                                if not self.prism_tomcat_out_folder:
+                                    self.create_process_folder(pname, folder)
+                            elif pname == "PRISM_DEAMON":
+                                if not self.prism_daemon_out_folder:
+                                    self.create_process_folder(pname, folder)
+                            
+                            #substitution parameters
+                            self.input_tag = var_value
+                            for ptask_name, ptask_value in prism_tasks.__dict__.items():
+                                if not ptask_name.startswith("__"):
+                            # for ptask in prism_tasks:
+                                    if ptask_name == var_name:
+                                        if var_name == "SUB_TYPE_CHECK":
+                                            self.stck_sub_type = 'A'
+                                        self.task_type = ptask_value
+                                        return True
         return False
                                
     def create_process_folder(self, pname, folder):
@@ -227,5 +233,3 @@ class TlogParser:
             
     def reinitialize_constructor_parameters(self):
         self.task_type = ""
-            
-        

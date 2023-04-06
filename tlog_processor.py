@@ -1,5 +1,5 @@
 import logging
-import socket
+# import socket
 from tlog import Tlog
 class TlogProcessor:
     """

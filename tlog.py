@@ -590,9 +590,11 @@ class Tlog:
                                 data_dict[header[index]] = element.replace('"', '').replace("'", '"')
             
                             if data_dict["ActivityType"]:
-                                for activity in DaiusActivityType:
-                                    if activity.value == data_dict["ActivityType"]:
-                                        data_dict["ActivityType"] = '{0} ({1})'.format(data_dict["ActivityType"], activity.name)
+                                for activity_name, activity_value in DaiusActivityType.__dict__.items():
+                                    if not activity_name.startswith("__"):
+                                # for activity in DaiusActivityType:
+                                        if activity_value == data_dict["ActivityType"]:
+                                            data_dict["ActivityType"] = '{0} ({1})'.format(data_dict["ActivityType"], activity_name)
                             self.ctid_data_dict[ctid].append(data_dict)
                         
                     elif pname == "ONMOPAY_REQUEST_COUNTER":
