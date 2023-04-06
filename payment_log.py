@@ -1,10 +1,11 @@
+import sys
+sys.dont_write_bytecode = True
 from datetime import datetime
 from collections import OrderedDict
 import json
 import logging
 import os
 import socket
-import sys
 from input_validation import InputValidation
 from process_initializer import Initializer
 from outfile_writer import FileWriter

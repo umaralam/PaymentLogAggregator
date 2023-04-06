@@ -25,15 +25,25 @@ class InputValidation:
         #Input argument validation
         logging.debug('Number of arguments passed is: %s', self.num_argv - 2)
         if self.num_argv == 6:
-            for status in logMode:
-                if status.value == self.input_mode.split("=")[1]:
-                    self.log_mode = status.value
-                    logging.debug('Arguments passed are :- msisdn:%s, start_date:%s, end_date:%s and log_mode:%s', self.msisdn, self.start_date, self.end_date, self.log_mode)
-                    self.is_input_valid = True
-                    break
+            for var_name, var_value in logMode.__dict__.items():
+                if not var_name.startswith("__"):
+                    if var_value == self.input_mode.split("=")[1]:
+                        self.log_mode = var_value
+                        logging.debug('Arguments passed are :- msisdn:%s, start_date:%s, end_date:%s and log_mode:%s', self.msisdn, self.start_date, self.end_date, self.log_mode)
+                        self.is_input_valid = True
+                        break
             else:
                 self.is_input_valid = True
                 logging.error('%s passed can eigther be "data/error/all", default value is %s', self.input_mode, self.log_mode)
+            # for status in logMode:
+            #     if status.value == self.input_mode.split("=")[1]:
+            #         self.log_mode = status.value
+            #         logging.debug('Arguments passed are :- msisdn:%s, start_date:%s, end_date:%s and log_mode:%s', self.msisdn, self.start_date, self.end_date, self.log_mode)
+            #         self.is_input_valid = True
+            #         break
+            # else:
+            #     self.is_input_valid = True
+            #     logging.error('%s passed can eigther be "data/error/all", default value is %s', self.input_mode, self.log_mode)
     
     def validate_msisdn(self):
         """

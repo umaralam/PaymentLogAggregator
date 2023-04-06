@@ -106,57 +106,69 @@ class FileWriter:
                             
                 #set initial index based on start of search string
                 if pname == "GRIFF":
-                    for gf_start_serach_string in Griff_St_SString:
-                        with open(thread_outfile, "r") as outFile:
-                            for i, line in enumerate(outFile):
-                                if re.search(gf_start_serach_string.value, line, re.DOTALL):
-                                    self.set_initial_index(i)
-                                    break
+                    for gf_start_serach_string_name, gf_start_serach_string_value in Griff_St_SString.__dict__.items():
+                        if not gf_start_serach_string_name.startswith("__"):
+                    # for gf_start_serach_string in Griff_St_SString:
+                            with open(thread_outfile, "r") as outFile:
+                                for i, line in enumerate(outFile):
+                                    if re.search(gf_start_serach_string_value, line, re.DOTALL):
+                                        self.set_initial_index(i)
+                                        break
                 elif pname == "PACKS":
-                    for pk_start_serach_string in Packs_St_SString:
-                        with open(thread_outfile, "r") as outFile:
-                            for i, line in enumerate(outFile):
-                                if re.search(pk_start_serach_string.value, line, re.DOTALL):
-                                    self.set_initial_index(i)
-                                    break
+                    for pk_start_serach_string_name, pk_start_serach_string_value in Packs_St_SString.__dict__.items():
+                        if not pk_start_serach_string_name.startswith("__"):
+                    # for pk_start_serach_string in Packs_St_SString:
+                            with open(thread_outfile, "r") as outFile:
+                                for i, line in enumerate(outFile):
+                                    if re.search(pk_start_serach_string_value, line, re.DOTALL):
+                                        self.set_initial_index(i)
+                                        break
                 
                     
                 #set final index based on end of search string
                 if pname == "GRIFF":
-                    for gf_end_serach_string in Griff_En_SString:
-                        with open(thread_outfile, "r") as outFile:
-                            for i, line in enumerate(outFile):
-                                if re.search(r"{}".format(str(gf_end_serach_string.value)), line):
-                                    self.set_final_index(i)
-                                    break
+                    for gf_end_serach_string_name, gf_end_serach_string_value in Griff_En_SString.__dict__.items():
+                        if not gf_end_serach_string_name.startswith("__"):
+                    # for gf_end_serach_string in Griff_En_SString:
+                            with open(thread_outfile, "r") as outFile:
+                                for i, line in enumerate(outFile):
+                                    if re.search(r"{}".format(str(gf_end_serach_string_value)), line):
+                                        self.set_final_index(i)
+                                        break
                 elif pname == "PACKS":
-                    for pk_end_serach_string in Packs_En_SString:
-                        with open(thread_outfile, "r") as outFile:
-                            for i, line in enumerate(outFile):
-                                if re.search(r"{}".format(str(pk_end_serach_string.value)), line):
-                                    self.set_final_index(i)
-                                    break
+                    for pk_end_serach_string_name, pk_end_serach_string_value in Packs_En_SString.__dict__.items():
+                        if not pk_end_serach_string_name.startswith("__"):
+                    # for pk_end_serach_string in Packs_En_SString:
+                            with open(thread_outfile, "r") as outFile:
+                                for i, line in enumerate(outFile):
+                                    if re.search(r"{}".format(str(pk_end_serach_string_value)), line):
+                                        self.set_final_index(i)
+                                        break
             
             elif pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON":
                 #set initial index based on start of search string
-                for sm_start_serach_string in Prism_St_SString:
-                    logging.info('st search: %s', str(sm_start_serach_string.value).format(task_type, sub_type))
-                    sm_start_serach_string = str(sm_start_serach_string.value).format(task_type, sub_type)
-                    with open(thread_outfile, "r") as outFile:
-                        for i, line in enumerate(outFile):
-                            if re.search(sm_start_serach_string, line, re.DOTALL):
-                                self.set_initial_index(i)
-                                break
+                for sm_start_serach_string_name, sm_start_serach_string_value in Prism_St_SString.__dict__.items():
+                    if not sm_start_serach_string_name.startswith("__"):
+                # for sm_start_serach_string in Prism_St_SString:
+                        logging.info('st search: %s', str(sm_start_serach_string_value).format(task_type, sub_type))
+                        sm_start_serach_string = str(sm_start_serach_string_value).format(task_type, sub_type)
+                        with open(thread_outfile, "r") as outFile:
+                            for i, line in enumerate(outFile):
+                                if re.search(sm_start_serach_string, line, re.DOTALL):
+                                    self.set_initial_index(i)
+                                    break
                 
                 #set final index based on end of search string
-                for sm_end_serach_string in Prism_En_SString:
-                    logging.info('en search: %s', str(sm_end_serach_string.value).format(input_tag))
-                    sm_end_serach_string = str(sm_end_serach_string.value).format(input_tag)
-                    with open(thread_outfile, "r") as outFile:
-                        for i, line in enumerate(outFile):
-                            if re.search(sm_end_serach_string, line, re.DOTALL):
-                                self.set_final_index(i)
-                                break
+                for sm_end_serach_string_name, sm_end_serach_string_value in Prism_En_SString.__dict__.items():
+                    if not sm_end_serach_string_name.startswith("__"):
+                # for sm_end_serach_string in Prism_En_SString:
+                        logging.info('en search: %s', str(sm_end_serach_string_value).format(input_tag))
+                        sm_end_serach_string = str(sm_end_serach_string_value).format(input_tag)
+                        with open(thread_outfile, "r") as outFile:
+                            for i, line in enumerate(outFile):
+                                if re.search(sm_end_serach_string, line, re.DOTALL):
+                                    self.set_final_index(i)
+                                    break
                 
 
         except FileNotFoundError as error:
