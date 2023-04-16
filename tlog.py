@@ -1036,7 +1036,7 @@ class Tlog:
             self.payment_data_dict_list.append(self.prism_daemon_perf_log_dict)
             logging.info('prism daemon perf log: %s', self.prism_daemon_perf_log_dict)
     
-    def msisdn_based_sms_tlog_fetch(self, pname, files):    
+    def msisdn_based_sms_tlog_fetch(self, pname, files):
         for file in files:
             try:
                 data = subprocess.check_output("cat {0} | grep -a {1}".format(file, self.validation_object.fmsisdn), shell=True, preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
