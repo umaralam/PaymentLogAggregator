@@ -288,7 +288,12 @@ class DaemonLogProcessor:
             self.input_date = self.date_range_list(self.s_date, self.e_date)
             
             for date in self.input_date:
-                input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
+                input_date_formatted_month = datetime.strftime(date, "%Y-%m")
+                
+                if pname == "PRISM_TOMCAT" or pname == "PRISM_DEAMON" or pname == "PRISM_SMSD":
+                    input_date_formatted = datetime.strftime(date, "%d")
+                else:
+                    input_date_formatted = datetime.strftime(date, "%Y-%m-%d")
 
                 if self.is_msisdn_file:
                     if pname == "GRIFF":
@@ -321,23 +326,23 @@ class DaemonLogProcessor:
                         self.backup_log_files.append(str(self.initializedPath_object.packs_tomcat_log_path_dict["packs_APPENDER_PACKS.FILE_backup_log"]).replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
                     
                     elif pname == "PRISM_TOMCAT":
-                        self.backup_log_files.append(str(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_PRISM_backup_log"]).replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
+                        self.backup_log_files.append(str(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_PRISM_backup_log"]).replace("yyyy-MM", "{}".format(input_date_formatted_month)).replace("dd", "{}".format(input_date_formatted)))
 
                     elif pname == "PRISM_DEAMON":
-                        self.backup_log_files.append(self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_PRISM_backup_log"].replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
+                        self.backup_log_files.append(self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_PRISM_backup_log"].replace("yyyy-MM", "{}".format(input_date_formatted_month)).replace("dd", "{}".format(input_date_formatted)))
                     
                     elif pname == "PRISM_SMSD":
-                        self.backup_log_files.append(self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_PRISM_backup_log"].replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
+                        self.backup_log_files.append(self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_PRISM_backup_log"].replace("yyyy-MM", "{}".format(input_date_formatted_month)).replace("dd", "{}".format(input_date_formatted)))
                 
                 elif self.is_backup_root_file:
                     if pname == "PRISM_TOMCAT":
-                        self.backup_log_files.append(str(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_ROOT_backup_log"]).replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
+                        self.backup_log_files.append(str(self.initializedPath_object.prism_tomcat_log_path_dict["prism_tomcat_ROOT_backup_log"]).replace("yyyy-MM", "{}".format(input_date_formatted_month)).replace("dd", "{}".format(input_date_formatted)))
 
                     elif pname == "PRISM_DEAMON":
-                        self.backup_log_files.append(self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_ROOT_backup_log"].replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
+                        self.backup_log_files.append(self.initializedPath_object.prism_daemon_log_path_dict["prism_daemon_ROOT_backup_log"].replace("yyyy-MM", "{}".format(input_date_formatted_month)).replace("dd", "{}".format(input_date_formatted)))
                     
                     elif pname == "PRISM_SMSD":
-                        self.backup_log_files.append(self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_ROOT_backup_log"].replace("yyyy-MM-dd", "{}".format(input_date_formatted)))
+                        self.backup_log_files.append(self.initializedPath_object.prism_smsd_log_path_dict["prism_smsd_ROOT_backup_log"].replace("yyyy-MM", "{}".format(input_date_formatted_month)).replace("dd", "{}".format(input_date_formatted)))
                 
         except KeyError as error:
             logging.info(error)
